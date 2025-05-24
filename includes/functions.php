@@ -1,14 +1,14 @@
 <?php
 // Este es un archivo conceptual que agrupa las diferentes partes del proyecto.
-// VERSIÓN 4: Prorrateo de flete/seguro para CSV, lógica 4x4 a nivel de embarque CSV,
+// VERSIÓN 4 COMPLETA: Prorrateo de flete/seguro para CSV, lógica 4x4 a nivel de embarque CSV,
 // ganancia e impresión de resúmenes.
 
 // --------------------------------------------------------------------------
-// --- 0. Estructura de Carpetas Sugerida (sin cambios respecto a v3) -------
+// --- 0. Estructura de Carpetas Sugerida -----------------------------------
 // --------------------------------------------------------------------------
 /*
 calculadora_importacion_php/
-|-- public/ (o htdocs, www)
+|-- public/ (o htdocs, www, el nombre de tu DocumentRoot en Apache)
 |   |-- index.html
 |   |-- assets/
 |   |   |-- css/
@@ -21,25 +21,93 @@ calculadora_importacion_php/
 |   |   |-- calculations.php
 |   |   |-- tariff_codes.php
 |   |   `-- import_csv.php
-|   `-- templates/
-|       `-- print_summary_template.php (o la lógica de generación de HTML para impresión en main.js)
+|   `-- templates/ (opcional, para plantillas de impresión HTML si no se genera en JS)
+|       `-- print_summary_template.php (ejemplo, no implementado en este código)
 |-- config/
 |   `-- db.php
 |-- includes/
 |   |-- functions.php
 |   `-- session_handler.php
-|-- uploads/ (asegurar permisos de escritura)
-|-- .htaccess (opcional)
+|-- uploads/ (directorio para subidas temporales de CSV, asegurar permisos de escritura para el servidor web)
+|-- .htaccess (opcional, para URLs amigables o configuraciones de Apache)
 */
 
 // --------------------------------------------------------------------------
-// --- 1. Backend: PHP (Modificaciones Clave) -------------------------------
+// --- 1. Backend: PHP ------------------------------------------------------
 // --------------------------------------------------------------------------
 
-// --- config/db.php --- (Sin cambios)
-// --- includes/session_handler.php --- (Sin cambios)
+// --- config/db.php ---
+/*
+<?php
+// config/db.php
+// Configuración y conexión a la base de datos PostgreSQL usando PDO.
 
-// --- includes/functions.php --- (MODIFICADO para la función de cálculo)
+$host = 'localhost'; // o la IP/host de tu servidor PostgreSQL
+$port = '5432';      // Puerto por defecto de PostgreSQL
+$dbname = 'nombre_tu_base_de_datos'; // Reemplaza con el nombre de tu base de datos
+$user = 'tu_usuario_postgres'; // Reemplaza con tu usuario de PostgreSQL
+$password = 'tu_contraseña_postgres'; // Reemplaza con tu contraseña
+
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};user={$user};password={$password}";
+
+try {
+    $pdo = new PDO($dsn);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Descomentar la siguiente línea para probar la conexión al configurar:
+    // if ($pdo) { echo "Conexión a PostgreSQL exitosa!"; }
+} catch (PDOException $e) {
+    // En un entorno de producción, no mostrarías este error directamente al usuario.
+    // Lo ideal es registrar el error y mostrar un mensaje genérico.
+    header('Content-Type: application/json');
+    http_response_code(500); // Internal Server Error
+    echo json_encode(['success' => false, 'message' => 'Error de conexión a la base de datos. Por favor, contacte al administrador.']);
+    // Para depuración, puedes dejar el mensaje original:
+    // die("Error de conexión a la base de datos: " . $e->getMessage());
+    exit;
+}
+?>
+*/
+
+// --- includes/session_handler.php ---
+/*
+<?php
+// includes/session_handler.php
+if (session_status() === PHP_SESSION_NONE) {
+    // Configuración de la cookie de sesión para mayor seguridad
+    session_set_cookie_params([
+        'lifetime' => 3600, // 1 hora
+        'path' => '/',
+        // 'domain' => '.tu_dominio.com', // Descomentar y ajustar en producción
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on', // Solo enviar sobre HTTPS
+        'httponly' => true, // Prevenir acceso a la cookie vía JavaScript
+        'samesite' => 'Lax' // Mitiga ataques CSRF
+    ]);
+    session_start();
+}
+
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+function requireLogin() {
+    if (!isLoggedIn()) {
+        http_response_code(401); // Unauthorized
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Autenticación requerida. Por favor, inicie sesión.']);
+        exit;
+    }
+}
+
+// Regenerar ID de sesión después del login para prevenir fijación de sesión
+function regenerateSessionAfterLogin() {
+    if (isset($_SESSION['user_id'])) { // Asegurarse que el usuario ya está "logueado" en la sesión actual
+        session_regenerate_id(true);
+    }
+}
+?>
+*/
+
+// --- includes/functions.php ---
 /*
 <?php
 // includes/functions.php
@@ -53,7 +121,7 @@ function sendJsonResponse($data, $statusCode = 200) {
 /**
  * Calcula los detalles de importación para un ítem.
  * Recibe el flete y seguro ya asignados/prorrateados para ESTE ítem.
- * Recibe un flag que indica si el EMBARQUE COMPLETO califica como 4x4.
+ * Recibe un flag que indica si el EMBARQUE COMPLETO (o el ítem individual) califica como 4x4.
  */
 function calculateImportationDetails(
     $pdo, 
@@ -63,7 +131,7 @@ function calculateImportationDetails(
     $costoFleteItem,  // Flete ya asignado/prorrateado para esta línea/cantidad de ítems
     $costoSeguroItem, // Seguro ya asignado/prorrateado para esta línea/cantidad de ítems
     $tariffCodeId, 
-    $isShipmentConsidered4x4, // Booleano: ¿El embarque completo es 4x4?
+    $isShipmentConsidered4x4, // Booleano: ¿El embarque/ítem es 4x4?
     $profitPercentage
 ) {
     $stmt_tariff = $pdo->prepare("SELECT * FROM tariff_codes WHERE id = :id");
@@ -71,34 +139,33 @@ function calculateImportationDetails(
     $tariffData = $stmt_tariff->fetch(PDO::FETCH_ASSOC);
 
     if (!$tariffData) {
-        return ['success' => false, 'message' => 'Partida arancelaria no encontrada en BD para el cálculo.'];
+        return ['success' => false, 'message' => 'Partida arancelaria (' . htmlspecialchars($tariffCodeId) . ') no encontrada en BD.'];
     }
 
-    $valorFOBTotalLinea = $valorFOBUnitario * $cantidad;
-    $pesoTotalLineaKg = $pesoUnitarioKg * $cantidad;
+    $valorFOBTotalLinea = floatval($valorFOBUnitario) * intval($cantidad);
+    $pesoTotalLineaKg = floatval($pesoUnitarioKg) * intval($cantidad);
     
-    // El CIF se calcula con el flete y seguro YA ASIGNADOS a esta línea.
-    $cif = $valorFOBTotalLinea + $costoFleteItem + $costoSeguroItem;
+    $cif = $valorFOBTotalLinea + floatval($costoFleteItem) + floatval($costoSeguroItem);
 
     $adValoremRate = floatval($tariffData['advalorem_rate']);
     $iceRate = floatval($tariffData['ice_rate'] ?? 0);
-    $ivaRate = floatval($tariffData['iva_rate']); // Asumir que la tabla siempre tiene un valor (0.00, 0.08, 0.15 etc.)
+    // El IVA se toma de la partida. Si es 0.15, 0.08, 0.00, ese se usa.
+    $ivaRate = floatval($tariffData['iva_rate']); 
     $fodinfaApplies = boolval($tariffData['fodinfa_applies'] ?? true);
     $specificTaxValue = floatval($tariffData['specific_tax_value'] ?? 0);
     $specificTaxUnit = $tariffData['specific_tax_unit'] ?? '';
 
     $adValoremCalculado = 0; $fodinfa = 0; $iceCalculado = 0; $ivaCalculado = 0; $specificTaxCalculado = 0;
 
-    if ($isShipmentConsidered4x4) { // Aplicar exenciones 4x4
-        // AdValorem, FODINFA, ICE suelen ser 0.
+    if ($isShipmentConsidered4x4) {
+        // AdValorem, FODINFA, ICE, Imp. Específico suelen ser 0 para 4x4.
         // IVA: Si la partida tiene iva_rate = 0 (ej. libros), es 0.
         // Si la partida tiene iva_rate > 0, y el envío es 4x4, usualmente no paga IVA.
         // Esta es una simplificación y debe verificarse con la normativa SENAE vigente.
-        if ($ivaRate > 0) $ivaCalculado = 0; 
-        // Los demás (AdV, FODINFA, ICE, Específico) son 0 para 4x4
-    } else { // No es 4x4 o no califica el embarque
+        if ($ivaRate > 0) $ivaCalculado = 0; // Asumimos 4x4 anula IVA si la partida no es 0% por defecto
+    } else { 
         $adValoremCalculado = $cif * $adValoremRate;
-        if ($fodinfaApplies) $fodinfa = $cif * 0.005;
+        if ($fodinfaApplies) $fodinfa = $cif * 0.005; // 0.5%
         
         $baseICE = $cif + $adValoremCalculado + $fodinfa;
         $iceCalculado = $baseICE * $iceRate;
@@ -109,6 +176,7 @@ function calculateImportationDetails(
             } elseif (stripos($specificTaxUnit, 'unidad') !== false) {
                 $specificTaxCalculado = $cantidad * $specificTaxValue;
             }
+            // Añadir más lógicas para otras unidades si es necesario
         }
         
         $baseIVA = $cif + $adValoremCalculado + $fodinfa + $iceCalculado + $specificTaxCalculado;
@@ -116,7 +184,7 @@ function calculateImportationDetails(
     }
 
     $totalImpuestos = $adValoremCalculado + $fodinfa + $iceCalculado + $ivaCalculado + $specificTaxCalculado;
-    $costoTotalEstimadoLinea = $valorFOBTotalLinea + $costoFleteItem + $costoSeguroItem + $totalImpuestos;
+    $costoTotalEstimadoLinea = $valorFOBTotalLinea + floatval($costoFleteItem) + floatval($costoSeguroItem) + $totalImpuestos;
 
     $costPriceUnitAfterImport = ($cantidad > 0) ? ($costoTotalEstimadoLinea / $cantidad) : 0;
     $profitAmountUnit = $costPriceUnitAfterImport * (floatval($profitPercentage) / 100);
@@ -126,16 +194,16 @@ function calculateImportationDetails(
     return [
         'success'                   => true,
         'calculoInput'              => [
-            'valorFOBUnitario'      => $valorFOBUnitario,
-            'cantidad'              => $cantidad,
+            'valorFOBUnitario'      => floatval($valorFOBUnitario),
+            'cantidad'              => intval($cantidad),
             'valorFOBTotalLinea'    => round($valorFOBTotalLinea,2),
-            'pesoUnitarioKg'        => $pesoUnitarioKg,
+            'pesoUnitarioKg'        => floatval($pesoUnitarioKg),
             'pesoTotalLineaKg'      => round($pesoTotalLineaKg,3),
-            'costoFleteItem'        => round($costoFleteItem,2), // Flete asignado a esta línea
-            'costoSeguroItem'       => round($costoSeguroItem,2), // Seguro asignado a esta línea
-            'partidaArancelariaInfo'=> $tariffData,
+            'costoFleteItem'        => round(floatval($costoFleteItem),2),
+            'costoSeguroItem'       => round(floatval($costoSeguroItem),2),
+            'partidaArancelariaInfo'=> $tariffData, // Contiene code, description, y todas las tasas base
             'isShipmentConsidered4x4'=> $isShipmentConsidered4x4,
-            'profitPercentageApplied'=> $profitPercentage
+            'profitPercentageApplied'=> floatval($profitPercentage)
         ],
         'cif'                       => round($cif, 2),
         'adValorem'                 => round($adValoremCalculado, 2),
