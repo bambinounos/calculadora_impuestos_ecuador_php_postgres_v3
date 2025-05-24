@@ -1,0 +1,62 @@
+*/
+
+// --- public/assets/css/style.css ---
+/*
+body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+header { background: #333; color: #fff; padding: 1rem 0; text-align: center; }
+header h1 { margin: 0; font-size: 1.8rem; }
+header nav { margin-top: 10px; }
+header nav button, header nav span { color: #fff; background: none; border: none; margin: 0 10px; cursor: pointer; font-size: 1rem; }
+header nav button:hover { text-decoration: underline; }
+.container { width: 90%; max-width: 960px; margin: auto; overflow: hidden; padding: 20px; background: #fff; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+h2, h3 { color: #333; text-align: center; margin-bottom: 20px; }
+form div { margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-weight: bold; }
+input[type="text"], input[type="number"], input[type="email"], input[type="password"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+input[type="checkbox"] { margin-right: 5px; vertical-align: middle; }
+button { display: inline-block; background: #5cb85c; color: #fff; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 10px; margin-top:5px; }
+button:hover { background: #4cae4c; }
+button[type="button"] { background: #f0ad4e; }
+button[type="button"]:hover { background: #eea236; }
+.results-box { margin-top: 20px; padding: 15px; background-color: #e9f7ef; border: 1px solid #d1e7dd; border-radius: 4px; }
+.results-box h3, .results-box h4 { margin-top: 0; color: #0f5132; text-align: left; }
+.results-box p { margin: 8px 0; }
+.results-box hr { border: 0; border-top: 1px solid #d1e7dd; margin: 10px 0; }
+.message { text-align: center; padding: 10px; margin-top: 10px; border-radius: 4px; }
+.message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+#saved-calculations-list ul, #tariff-list ul { list-style-type: none; padding: 0; }
+#saved-calculations-list li, #tariff-list li { background: #f9f9f9; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+#saved-calculations-list li .calc-info, #tariff-list li .tariff-info { flex-grow: 1; }
+#saved-calculations-list li .actions button, #tariff-list li .actions button { margin-left: 5px; padding: 5px 8px; font-size: 0.9rem; }
+footer { text-align: center; padding: 20px; margin-top: 30px; color: #777; font-size: 0.9em; }
+#tariff-details-preview { font-size:0.9em; margin-top:5px; color:grey; padding: 5px; background-color: #f9f9f9; border-radius: 3px;}
+#csv-results-details table, #tariff-list table { width: 100%; font-size: 0.9em; border-collapse: collapse; margin-top:10px;}
+#csv-results-details th, #csv-results-details td, #tariff-list th, #tariff-list td { border: 1px solid #ddd; padding: 4px; text-align: left; }
+#csv-results-details th, #tariff-list th { background-color: #f2f2f2; }
+.text-right { text-align: right !important; }
+.total-row td { font-weight: bold; background-color: #f0f0f0 !important; }
+.section-title { font-size: 1.2em; font-weight: bold; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+#printable-area { font-family: Arial, sans-serif; margin: 20px; }
+#printable-area h2, #printable-area h3, #printable-area h4 { text-align: center; color: #333; }
+#printable-area table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; }
+#printable-area th, #printable-area td { border: 1px solid #888; padding: 6px; text-align: left; }
+#printable-area th { background-color: #e0e0e0; font-weight: bold; }
+#printable-area .footer-notes { font-size: 8pt; margin-top: 30px; text-align: center; }
+
+@media print {
+    body * { visibility: hidden; }
+    #printable-area, #printable-area * { visibility: visible; }
+    #printable-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10mm; box-sizing: border-box; font-size: 9pt; }
+    header, nav, footer, form, button, input, select, textarea,
+    #auth-section, #calculator-section, #csv-import-section, #saved-calculations-section, #tariff-management-section,
+    .message, #auth-nav, #show-register-link, #show-login-link, 
+    #saved-calculations-list .actions button, #tariff-list .actions button /* Ocultar botones de acción en listas al imprimir */
+    { display: none !important; }
+    #printable-area table { margin-top: 10px; }
+    #printable-area th, #printable-area td { padding: 4px; }
+    #printable-area h2 { font-size: 14pt; margin-bottom: 10px; }
+    #printable-area p { margin: 5px 0; }
+    @page { size: A4; margin: 15mm; } 
+}
