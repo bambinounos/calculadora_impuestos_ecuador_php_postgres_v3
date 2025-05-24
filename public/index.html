@@ -1,0 +1,249 @@
+*/
+
+// --------------------------------------------------------------------------
+// --- 2. Frontend: HTML, CSS, JavaScript -----------------------------------
+// --------------------------------------------------------------------------
+// --- public/index.html ---
+/*
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Impuestos Ecuador V4</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Calculadora de Impuestos de Importación Ecuador V4</h1>
+        <nav id="auth-nav">
+            </nav>
+    </header>
+
+    <main>
+        <section id="auth-section" class="container" style="display: none;">
+            <h2>Acceso de Usuario</h2>
+            <form id="login-form" style="display: block;"> <h3>Iniciar Sesión</h3>
+                <div>
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" name="email" required autocomplete="email">
+                </div>
+                <div>
+                    <label for="login-password">Contraseña:</label>
+                    <input type="password" id="login-password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit">Login</button>
+                <p>¿No tienes cuenta? <a href="#" id="show-register-link">Regístrate aquí</a></p>
+            </form>
+            <form id="register-form" style="display: none;">
+                <h3>Registrarse</h3>
+                 <div>
+                    <label for="register-email">Email:</label>
+                    <input type="email" id="register-email" name="email" required autocomplete="email">
+                </div>
+                <div>
+                    <label for="register-password">Contraseña (mín. 6 caracteres):</label>
+                    <input type="password" id="register-password" name="password" required autocomplete="new-password">
+                </div>
+                <button type="submit">Registrar</button>
+                <p>¿Ya tienes cuenta? <a href="#" id="show-login-link">Inicia sesión aquí</a></p>
+            </form>
+            <p id="auth-message" class="message" style="display: none;"></p>
+        </section>
+
+        <section id="calculator-section" class="container" style="display: none;">
+            <h2>Calcular Impuestos por Ítem</h2>
+            <form id="tax-calculator-form">
+                <div>
+                    <label for="productName">Nombre del Producto/Cálculo (para guardar):</label>
+                    <input type="text" id="productName" name="productName">
+                </div>
+                <div>
+                    <label for="tariff-code-search">Buscar Partida Arancelaria (código o descripción):</label>
+                    <input type="text" id="tariff-code-search" placeholder="Ej: 8703.23 o Celular">
+                    <select id="tariffCodeId" name="tariffCodeId" required>
+                        <option value="">Seleccione una partida o busque arriba</option>
+                    </select>
+                    <div id="tariff-details-preview"></div>
+                </div>
+                 <div>
+                    <label for="cantidad">Cantidad:</label>
+                    <input type="number" id="cantidad" name="cantidad" value="1" step="1" min="1" required>
+                </div>
+                <div>
+                    <label for="valorFOB">Valor FOB Unitario (USD):</label>
+                    <input type="number" id="valorFOB" name="valorFOB" step="0.01" min="0" required>
+                </div>
+                <div>
+                    <label for="pesoUnitarioKg">Peso Unitario (Kg):</label>
+                    <input type="number" id="pesoUnitarioKg" name="pesoUnitarioKg" step="0.001" min="0" value="0">
+                </div>
+                <div>
+                    <label for="costoFlete">Costo Flete Total para este Ítem/Línea (USD):</label>
+                    <input type="number" id="costoFlete" name="costoFlete" step="0.01" min="0" value="0">
+                </div>
+                <div>
+                    <label for="costoSeguro">Costo Seguro Total para este Ítem/Línea (USD):</label>
+                    <input type="number" id="costoSeguro" name="costoSeguro" step="0.01" min="0" value="0">
+                </div>
+                <div>
+                    <label for="profitPercentage">Porcentaje de Ganancia Deseado (%):</label>
+                    <input type="number" id="profitPercentage" name="profitPercentage" step="0.01" min="0" value="20">
+                </div>
+                <div>
+                    <input type="checkbox" id="esCourier4x4" name="esCourier4x4">
+                    <label for="esCourier4x4">¿Este ítem individual se considera bajo régimen Courier 4x4?</label>
+                </div>
+                <button type="submit">Calcular Impuestos del Ítem</button>
+                <button type="button" id="save-calculation-button" style="display: none;">Guardar Cálculo</button>
+                <button type="button" id="print-item-summary-button" style="display: none;">Imprimir Resumen Ítem</button>
+                <input type="hidden" id="editing-calculation-id" value="">
+            </form>
+            <div id="calculation-results" class="results-box" style="display: none;">
+                <h3>Resultados Estimados del Ítem:</h3>
+                <div id="res-item-details"></div>
+                <p>Valor CIF: USD <span id="res-cif"></span></p>
+                <p>Ad Valorem: USD <span id="res-advalorem"></span></p>
+                <p>FODINFA: USD <span id="res-fodinfa"></span></p>
+                <p>ICE: USD <span id="res-ice"></span></p>
+                <p>Imp. Específico: USD <span id="res-specifictax"></span></p>
+                <p>IVA: USD <span id="res-iva"></span></p>
+                <p><strong>Total Impuestos: USD <span id="res-total-impuestos"></span></strong></p>
+                <p>Costo Total Línea (Post-Importación): USD <span id="res-costo-total-linea"></span></p>
+                <hr>
+                <p>Costo Unitario (Post-Importación): USD <span id="res-cost-unit-final"></span></p>
+                <p>Ganancia Aplicada (<span id="res-profit-percentage-applied"></span>%): USD <span id="res-profit-amount-unit"></span> (por unidad)</p>
+                <h4>PVP Unitario Estimado: USD <span id="res-pvp-unit"></span></h4>
+                <h4>PVP Total Línea Estimado: USD <span id="res-pvp-total-line"></span></h4>
+            </div>
+            <p id="calculator-message" class="message" style="display: none;"></p>
+        </section>
+
+        <section id="csv-import-section" class="container" style="display:none;">
+            <h2>Importar y Calcular desde CSV</h2>
+            <form id="csv-import-form">
+                <div>
+                    <label for="csvFile">Seleccionar archivo CSV:</label>
+                    <input type="file" id="csvFile" name="csvFile" accept=".csv, text/csv" required>
+                    <small>Formato esperado: partida_codigo, cantidad, peso_kg_unitario, fob_usd_unitario, [descripcion_producto (opc)], [profit_percentage_linea (opc)]</small>
+                </div>
+                <div>
+                    <label for="fleteGeneralCsv">Flete General para TODO el Envío CSV (USD):</label>
+                    <input type="number" id="fleteGeneralCsv" name="fleteGeneralCsv" step="0.01" min="0" value="0">
+                </div>
+                 <div>
+                    <label for="seguroGeneralCsv">Seguro General para TODO el Envío CSV (USD):</label>
+                    <input type="number" id="seguroGeneralCsv" name="seguroGeneralCsv" step="0.01" min="0" value="0">
+                </div>
+                <div>
+                    <label for="profitPercentageCsv">Porcentaje de Ganancia General para CSV (%):</label>
+                    <input type="number" id="profitPercentageCsv" name="profitPercentageCsv" step="0.01" min="0" value="20">
+                    <small>Se usará si la columna de ganancia en el CSV está vacía o no existe.</small>
+                </div>
+                <button type="submit">Procesar CSV</button>
+            </form>
+            <div id="csv-results-summary" style="margin-top:20px;"></div>
+            <div id="csv-results-details" style="margin-top:10px; max-height: 400px; overflow-y:auto;"></div>
+            <button type="button" id="print-csv-summary-button" style="display: none; margin-top: 10px;">Imprimir Resumen CSV</button>
+            <p id="csv-message" class="message" style="display: none;"></p>
+        </section>
+
+        <section id="saved-calculations-section" class="container" style="display: none;">
+             <h2>Mis Cálculos Guardados</h2>
+            <div id="saved-calculations-list"> </div>
+            <p id="saved-calculations-message" class="message" style="display: none;"></p>
+        </section>
+        
+        <section id="tariff-management-section" class="container" style="display:none;"> <h2>Gestionar Partidas Arancelarias</h2>
+            <form id="tariff-code-form">
+                <input type="hidden" id="tariff-edit-id">
+                <div><label>Código Partida (Ej: 8517.12.00.00): <input type="text" id="tariff-code-val" required maxlength="50"></label></div>
+                <div><label>Descripción: <input type="text" id="tariff-description-val" required></label></div>
+                <div><label>Tasa AdValorem (Ej: 0.10 para 10%): <input type="number" step="0.0001" id="tariff-advalorem-val" required value="0.0000"></label></div>
+                <div><label>Tasa ICE (Ej: 0.15 para 15%): <input type="number" step="0.0001" id="tariff-ice-val" value="0.0000"></label></div>
+                <div><label>Tasa IVA (Ej: 0.15 para 15%, 0.00 para 0%): <input type="number" step="0.0001" id="tariff-iva-val" required value="0.1500"></label></div>
+                <div><label>Imp. Específico Valor (Ej: 0.50): <input type="number" step="0.01" id="tariff-specific-value-val" value="0.00"></label></div>
+                <div><label>Imp. Específico Unidad (Ej: USD/Kg, USD/Unidad): <input type="text" id="tariff-specific-unit-val" maxlength="50"></label></div>
+                <div><label><input type="checkbox" id="tariff-fodinfa-applies" checked> Aplica FODINFA (0.5% CIF)</label></div>
+                <div><label>Notas Adicionales: <textarea id="tariff-notes-val"></textarea></label></div>
+                <button type="submit" id="tariff-form-submit-button">Guardar Partida</button>
+                <button type="button" id="tariff-form-cancel-button" style="display:none;">Cancelar Edición</button>
+            </form>
+            <div id="tariff-list-container" style="margin-top:20px;">
+                <h3>Listado de Partidas Existentes (Primeras 50)</h3>
+                <div id="tariff-list"> </div>
+            </div>
+            <p id="tariff-message" class="message" style="display: none;"></p>
+        </section>
+        
+        <div id="printable-area" style="display:none;"></div>
+
+    </main>
+    <footer>
+        <p>&copy; <?php echo date("Y"); ?> Calculadora de Impuestos Ecuador. Tasas referenciales. Verifique con fuentes oficiales.</p>
+    </footer>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
+*/
+
+// --- public/assets/css/style.css ---
+/*
+body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+header { background: #333; color: #fff; padding: 1rem 0; text-align: center; }
+header h1 { margin: 0; font-size: 1.8rem; }
+header nav { margin-top: 10px; }
+header nav button, header nav span { color: #fff; background: none; border: none; margin: 0 10px; cursor: pointer; font-size: 1rem; }
+header nav button:hover { text-decoration: underline; }
+.container { width: 90%; max-width: 960px; margin: auto; overflow: hidden; padding: 20px; background: #fff; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+h2, h3 { color: #333; text-align: center; margin-bottom: 20px; }
+form div { margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-weight: bold; }
+input[type="text"], input[type="number"], input[type="email"], input[type="password"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+input[type="checkbox"] { margin-right: 5px; vertical-align: middle; }
+button { display: inline-block; background: #5cb85c; color: #fff; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 10px; margin-top:5px; }
+button:hover { background: #4cae4c; }
+button[type="button"] { background: #f0ad4e; }
+button[type="button"]:hover { background: #eea236; }
+.results-box { margin-top: 20px; padding: 15px; background-color: #e9f7ef; border: 1px solid #d1e7dd; border-radius: 4px; }
+.results-box h3, .results-box h4 { margin-top: 0; color: #0f5132; text-align: left; }
+.results-box p { margin: 8px 0; }
+.results-box hr { border: 0; border-top: 1px solid #d1e7dd; margin: 10px 0; }
+.message { text-align: center; padding: 10px; margin-top: 10px; border-radius: 4px; }
+.message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+#saved-calculations-list ul, #tariff-list ul { list-style-type: none; padding: 0; }
+#saved-calculations-list li, #tariff-list li { background: #f9f9f9; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+#saved-calculations-list li .calc-info, #tariff-list li .tariff-info { flex-grow: 1; }
+#saved-calculations-list li .actions button, #tariff-list li .actions button { margin-left: 5px; padding: 5px 8px; font-size: 0.9rem; }
+footer { text-align: center; padding: 20px; margin-top: 30px; color: #777; font-size: 0.9em; }
+#tariff-details-preview { font-size:0.9em; margin-top:5px; color:grey; padding: 5px; background-color: #f9f9f9; border-radius: 3px;}
+#csv-results-details table, #tariff-list table { width: 100%; font-size: 0.9em; border-collapse: collapse; margin-top:10px;}
+#csv-results-details th, #csv-results-details td, #tariff-list th, #tariff-list td { border: 1px solid #ddd; padding: 4px; text-align: left; }
+#csv-results-details th, #tariff-list th { background-color: #f2f2f2; }
+.text-right { text-align: right !important; }
+.total-row td { font-weight: bold; background-color: #f0f0f0 !important; }
+.section-title { font-size: 1.2em; font-weight: bold; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+#printable-area { font-family: Arial, sans-serif; margin: 20px; }
+#printable-area h2, #printable-area h3, #printable-area h4 { text-align: center; color: #333; }
+#printable-area table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; }
+#printable-area th, #printable-area td { border: 1px solid #888; padding: 6px; text-align: left; }
+#printable-area th { background-color: #e0e0e0; font-weight: bold; }
+#printable-area .footer-notes { font-size: 8pt; margin-top: 30px; text-align: center; }
+
+@media print {
+    body * { visibility: hidden; }
+    #printable-area, #printable-area * { visibility: visible; }
+    #printable-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10mm; box-sizing: border-box; font-size: 9pt; }
+    header, nav, footer, form, button, input, select, textarea,
+    #auth-section, #calculator-section, #csv-import-section, #saved-calculations-section, #tariff-management-section,
+    .message, #auth-nav, #show-register-link, #show-login-link, 
+    #saved-calculations-list .actions button, #tariff-list .actions button /* Ocultar botones de acción en listas al imprimir */
+    { display: none !important; }
+    #printable-area table { margin-top: 10px; }
+    #printable-area th, #printable-area td { padding: 4px; }
+    #printable-area h2 { font-size: 14pt; margin-bottom: 10px; }
+    #printable-area p { margin: 5px 0; }
+    @page { size: A4; margin: 15mm; } 
+}
