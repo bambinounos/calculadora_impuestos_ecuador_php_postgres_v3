@@ -1,4 +1,3 @@
-//<?php
 // Este es un archivo conceptual que agrupa el SQL y el script PHP de instalación.
 // En tu proyecto, estos serían dos archivos separados.
 
@@ -169,5 +168,3 @@ echo "4. ¡Pruebe la aplicación!\n";
 
 exit(0);
 ?>
-
-//?>
