@@ -10,12 +10,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Impuestos Ecuador V4</title>
+    <title>Calculadora de Impuestos Ecuador V5</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Calculadora de Impuestos de Importación Ecuador V4</h1>
+        <h1>Calculadora de Impuestos de Importación Ecuador V5</h1>
         <nav id="auth-nav">
             </nav>
     </header>
@@ -23,28 +23,17 @@
     <main>
         <section id="auth-section" class="container" style="display: none;">
             <h2>Acceso de Usuario</h2>
-            <form id="login-form" style="display: block;"> <h3>Iniciar Sesión</h3>
-                <div>
-                    <label for="login-email">Email:</label>
-                    <input type="email" id="login-email" name="email" required autocomplete="email">
-                </div>
-                <div>
-                    <label for="login-password">Contraseña:</label>
-                    <input type="password" id="login-password" name="password" required autocomplete="current-password">
-                </div>
+            <form id="login-form" style="display: block;">
+                <h3>Iniciar Sesión</h3>
+                <div><label for="login-email">Email:</label><input type="email" id="login-email" name="email" required autocomplete="email"></div>
+                <div><label for="login-password">Contraseña:</label><input type="password" id="login-password" name="password" required autocomplete="current-password"></div>
                 <button type="submit">Login</button>
                 <p>¿No tienes cuenta? <a href="#" id="show-register-link">Regístrate aquí</a></p>
             </form>
             <form id="register-form" style="display: none;">
                 <h3>Registrarse</h3>
-                 <div>
-                    <label for="register-email">Email:</label>
-                    <input type="email" id="register-email" name="email" required autocomplete="email">
-                </div>
-                <div>
-                    <label for="register-password">Contraseña (mín. 6 caracteres):</label>
-                    <input type="password" id="register-password" name="password" required autocomplete="new-password">
-                </div>
+                 <div><label for="register-email">Email:</label><input type="email" id="register-email" name="email" required autocomplete="email"></div>
+                <div><label for="register-password">Contraseña (mín. 6 caracteres):</label><input type="password" id="register-password" name="password" required autocomplete="new-password"></div>
                 <button type="submit">Registrar</button>
                 <p>¿Ya tienes cuenta? <a href="#" id="show-login-link">Inicia sesión aquí</a></p>
             </form>
@@ -54,46 +43,20 @@
         <section id="calculator-section" class="container" style="display: none;">
             <h2>Calcular Impuestos por Ítem</h2>
             <form id="tax-calculator-form">
-                <div>
-                    <label for="productName">Nombre del Producto/Cálculo (para guardar):</label>
-                    <input type="text" id="productName" name="productName">
-                </div>
+                <div><label for="productName">Nombre del Producto/Cálculo (para guardar):</label><input type="text" id="productName" name="productName"></div>
                 <div>
                     <label for="tariff-code-search">Buscar Partida Arancelaria (código o descripción):</label>
                     <input type="text" id="tariff-code-search" placeholder="Ej: 8703.23 o Celular">
-                    <select id="tariffCodeId" name="tariffCodeId" required>
-                        <option value="">Seleccione una partida o busque arriba</option>
-                    </select>
+                    <select id="tariffCodeId" name="tariffCodeId" required><option value="">Seleccione una partida o busque arriba</option></select>
                     <div id="tariff-details-preview"></div>
                 </div>
-                 <div>
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" id="cantidad" name="cantidad" value="1" step="1" min="1" required>
-                </div>
-                <div>
-                    <label for="valorFOB">Valor FOB Unitario (USD):</label>
-                    <input type="number" id="valorFOB" name="valorFOB" step="0.01" min="0" required>
-                </div>
-                <div>
-                    <label for="pesoUnitarioKg">Peso Unitario (Kg):</label>
-                    <input type="number" id="pesoUnitarioKg" name="pesoUnitarioKg" step="0.001" min="0" value="0">
-                </div>
-                <div>
-                    <label for="costoFlete">Costo Flete Total para este Ítem/Línea (USD):</label>
-                    <input type="number" id="costoFlete" name="costoFlete" step="0.01" min="0" value="0">
-                </div>
-                <div>
-                    <label for="costoSeguro">Costo Seguro Total para este Ítem/Línea (USD):</label>
-                    <input type="number" id="costoSeguro" name="costoSeguro" step="0.01" min="0" value="0">
-                </div>
-                <div>
-                    <label for="profitPercentage">Porcentaje de Ganancia Deseado (%):</label>
-                    <input type="number" id="profitPercentage" name="profitPercentage" step="0.01" min="0" value="20">
-                </div>
-                <div>
-                    <input type="checkbox" id="esCourier4x4" name="esCourier4x4">
-                    <label for="esCourier4x4">¿Este ítem individual se considera bajo régimen Courier 4x4?</label>
-                </div>
+                 <div><label for="cantidad">Cantidad:</label><input type="number" id="cantidad" name="cantidad" value="1" step="1" min="1" required></div>
+                <div><label for="valorFOB">Valor FOB Unitario (USD):</label><input type="number" id="valorFOB" name="valorFOB" step="0.01" min="0" required></div>
+                <div><label for="pesoUnitarioKg">Peso Unitario (Kg):</label><input type="number" id="pesoUnitarioKg" name="pesoUnitarioKg" step="0.001" min="0" value="0"></div>
+                <div><label for="costoFlete">Costo Flete Total para este Ítem/Línea (USD):</label><input type="number" id="costoFlete" name="costoFlete" step="0.01" min="0" value="0"></div>
+                <div><label for="costoSeguro">Costo Seguro Total para este Ítem/Línea (USD):</label><input type="number" id="costoSeguro" name="costoSeguro" step="0.01" min="0" value="0"></div>
+                <div><label for="profitPercentage">Porcentaje de Ganancia Deseado (%):</label><input type="number" id="profitPercentage" name="profitPercentage" step="0.01" min="0" value="20"></div>
+                <div><input type="checkbox" id="esCourier4x4" name="esCourier4x4"><label for="esCourier4x4">¿Este ítem individual se considera bajo régimen Courier 4x4?</label></div>
                 <button type="submit">Calcular Impuestos del Ítem</button>
                 <button type="button" id="save-calculation-button" style="display: none;">Guardar Cálculo</button>
                 <button type="button" id="print-item-summary-button" style="display: none;">Imprimir Resumen Ítem</button>
@@ -109,8 +72,7 @@
                 <p>Imp. Específico: USD <span id="res-specifictax"></span></p>
                 <p>IVA: USD <span id="res-iva"></span></p>
                 <p><strong>Total Impuestos: USD <span id="res-total-impuestos"></span></strong></p>
-                <p>Costo Total Línea (Post-Importación): USD <span id="res-costo-total-linea"></span></p>
-                <hr>
+                <p>Costo Total Línea (Post-Importación): USD <span id="res-costo-total-linea"></span></p><hr>
                 <p>Costo Unitario (Post-Importación): USD <span id="res-cost-unit-final"></span></p>
                 <p>Ganancia Aplicada (<span id="res-profit-percentage-applied"></span>%): USD <span id="res-profit-amount-unit"></span> (por unidad)</p>
                 <h4>PVP Unitario Estimado: USD <span id="res-pvp-unit"></span></h4>
@@ -121,20 +83,14 @@
 
         <section id="csv-import-section" class="container" style="display:none;">
             <h2>Importar y Calcular desde CSV</h2>
-            <form id="csv-import-form">
+            <form id="csv-import-form" enctype="multipart/form-data">
                 <div>
                     <label for="csvFile">Seleccionar archivo CSV:</label>
                     <input type="file" id="csvFile" name="csvFile" accept=".csv, text/csv" required>
-                    <small>Formato esperado: partida_codigo, cantidad, peso_kg_unitario, fob_usd_unitario, [descripcion_producto (opc)], [profit_percentage_linea (opc)]</small>
+                    <small>Formato: partida_codigo, cantidad, peso_kg_unitario, fob_usd_unitario, [descripcion (opc)], [profit_percentage_linea (opc)]</small>
                 </div>
-                <div>
-                    <label for="fleteGeneralCsv">Flete General para TODO el Envío CSV (USD):</label>
-                    <input type="number" id="fleteGeneralCsv" name="fleteGeneralCsv" step="0.01" min="0" value="0">
-                </div>
-                 <div>
-                    <label for="seguroGeneralCsv">Seguro General para TODO el Envío CSV (USD):</label>
-                    <input type="number" id="seguroGeneralCsv" name="seguroGeneralCsv" step="0.01" min="0" value="0">
-                </div>
+                <div><label for="fleteGeneralCsv">Flete General para TODO el Envío CSV (USD):</label><input type="number" id="fleteGeneralCsv" name="fleteGeneralCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="seguroGeneralCsv">Seguro General para TODO el Envío CSV (USD):</label><input type="number" id="seguroGeneralCsv" name="seguroGeneralCsv" step="0.01" min="0" value="0"></div>
                 <div>
                     <label for="profitPercentageCsv">Porcentaje de Ganancia General para CSV (%):</label>
                     <input type="number" id="profitPercentageCsv" name="profitPercentageCsv" step="0.01" min="0" value="20">
@@ -150,11 +106,12 @@
 
         <section id="saved-calculations-section" class="container" style="display: none;">
              <h2>Mis Cálculos Guardados</h2>
-            <div id="saved-calculations-list"> </div>
+            <div id="saved-calculations-list"></div>
             <p id="saved-calculations-message" class="message" style="display: none;"></p>
         </section>
         
-        <section id="tariff-management-section" class="container" style="display:none;"> <h2>Gestionar Partidas Arancelarias</h2>
+        <section id="tariff-management-section" class="container" style="display:none;">
+            <h2>Gestionar Partidas Arancelarias</h2>
             <form id="tariff-code-form">
                 <input type="hidden" id="tariff-edit-id">
                 <div><label>Código Partida (Ej: 8517.12.00.00): <input type="text" id="tariff-code-val" required maxlength="50"></label></div>
@@ -171,13 +128,18 @@
             </form>
             <div id="tariff-list-container" style="margin-top:20px;">
                 <h3>Listado de Partidas Existentes (Primeras 50)</h3>
-                <div id="tariff-list"> </div>
+                <div id="tariff-list"></div>
             </div>
             <p id="tariff-message" class="message" style="display: none;"></p>
         </section>
+
+        <section id="csv-history-section" class="container" style="display:none;">
+            <h2>Historial de Importaciones CSV</h2>
+            <div id="csv-history-list"></div>
+            <p id="csv-history-message" class="message" style="display: none;"></p>
+        </section>
         
         <div id="printable-area" style="display:none;"></div>
-
     </main>
     <footer>
         <p>&copy; <?php echo date("Y"); ?> Calculadora de Impuestos Ecuador. Tasas referenciales. Verifique con fuentes oficiales.</p>
