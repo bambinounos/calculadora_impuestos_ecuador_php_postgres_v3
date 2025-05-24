@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Impuestos Ecuador V3</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header> </header>
+    <main>
+        <section id="auth-section" class="container" style="display: none;"> </section>
+
+        <section id="calculator-section" class="container">
+            <h2>Calcular Impuestos por Ítem</h2>
+            <form id="tax-calculator-form">
+                <div>
+                    <label for="profitPercentage">Porcentaje de Ganancia Deseado (%):</label>
+                    <input type="number" id="profitPercentage" name="profitPercentage" step="0.01" min="0" value="20"> </div>
+                <button type="submit">Calcular Impuestos del Ítem</button>
+                <button type="button" id="save-calculation-button" style="display: none;">Guardar Cálculo</button>
+                <button type="button" id="print-item-summary-button" style="display: none;">Imprimir Resumen Ítem</button> <input type="hidden" id="editing-calculation-id" value="">
+            </form>
+            <div id="calculation-results" class="results-box" style="display: none;">
+                <h3>Resultados Estimados del Ítem:</h3>
+                <div id="res-item-details"></div>
+                <p>Valor CIF: USD <span id="res-cif"></span></p>
+                <p>Ad Valorem: USD <span id="res-advalorem"></span></p>
+                <p>FODINFA: USD <span id="res-fodinfa"></span></p>
+                <p>ICE: USD <span id="res-ice"></span></p>
+                <p>Imp. Específico: USD <span id="res-specifictax"></span></p>
+                <p>IVA: USD <span id="res-iva"></span></p>
+                <p><strong>Total Impuestos: USD <span id="res-total-impuestos"></span></strong></p>
+                <p>Costo Total Línea (Post-Importación): USD <span id="res-costo-total-linea"></span></p> <hr>
+                <p>Costo Unitario (Post-Importación): USD <span id="res-cost-unit-final"></span></p> <p>Ganancia Aplicada (<span id="res-profit-percentage-applied"></span>%): USD <span id="res-profit-amount-unit"></span> (por unidad)</p> <h4>PVP Unitario Estimado: USD <span id="res-pvp-unit"></span></h4> <h4>PVP Total Línea Estimado: USD <span id="res-pvp-total-line"></span></h4> </div>
+            <p id="calculator-message" class="message"></p>
+        </section>
+
+        <section id="csv-import-section" class="container" style="display:none;">
+            <h2>Importar y Calcular desde CSV</h2>
+            <form id="csv-import-form">
+                <div>
+                    <label for="fleteGeneralCsv">Flete General para el Envío CSV (USD):</label>
+                    <input type="number" id="fleteGeneralCsv" name="fleteGeneralCsv" step="0.01" min="0" value="0">
+                </div>
+                <div>
+                    <label for="seguroGeneralCsv">Seguro General para el Envío CSV (USD):</label>
+                    <input type="number" id="seguroGeneralCsv" name="seguroGeneralCsv" step="0.01" min="0" value="0">
+                </div>
+                <div>
+                    <label for="profitPercentageCsv">Porcentaje de Ganancia General para CSV (%):</label> <input type="number" id="profitPercentageCsv" name="profitPercentageCsv" step="0.01" min="0" value="20">
+                </div>
+                <button type="submit">Procesar CSV</button>
+            </form>
+            <div id="csv-results-summary" style="margin-top:20px;"></div>
+            <div id="csv-results-details" style="margin-top:10px; max-height: 400px; overflow-y:auto;"></div>
+            <button type="button" id="print-csv-summary-button" style="display: none; margin-top: 10px;">Imprimir Resumen CSV</button> <p id="csv-message" class="message"></p>
+        </section>
+
+        <section id="saved-calculations-section" class="container" style="display: none;">
+             <h2>Mis Cálculos Guardados</h2>
+            <div id="saved-calculations-list"> </div>
+            <p id="saved-calculations-message" class="message"></p>
+        </section>
+        
+        <div id="printable-area" style="display:none;"></div>
+
+    </main>
+    <footer> </footer>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
