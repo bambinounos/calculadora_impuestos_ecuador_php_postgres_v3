@@ -1,6 +1,6 @@
 */
 
-// --- api/calculations.php --- (MODIFICADO para aceptar csv_import_id y csv_import_line_number)
+// --- api/calculations.php --- (MODIFICADO para asegurar que los nombres de los campos guardados coincidan con los devueltos por `calculateImportationDetails`)
 /*
 <?php
 // api/calculations.php
@@ -15,6 +15,7 @@ $action = $_REQUEST['action'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 'update')) {
     $data = json_decode(file_get_contents('php://input'), true);
 
+    // Validación de datos esenciales
     if (empty($data['productName']) || !isset($data['tariffCodeId']) || !is_numeric($data['tariffCodeId']) || 
         !isset($data['valorFOBUnitario']) || !is_numeric($data['valorFOBUnitario']) ||
         !isset($data['cantidad']) || !is_numeric($data['cantidad']) || intval($data['cantidad']) <= 0 ||
@@ -30,9 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
         'valor_fob_unitario' => floatval($data['valorFOBUnitario']),
         'cantidad' => intval($data['cantidad']),
         'peso_unitario_kg' => isset($data['pesoUnitarioKg']) && is_numeric($data['pesoUnitarioKg']) ? floatval($data['pesoUnitarioKg']) : null,
-        'costo_flete' => isset($data['costoFlete']) && is_numeric($data['costoFlete']) ? floatval($data['costoFlete']) : null,
-        'costo_seguro' => isset($data['costoSeguro']) && is_numeric($data['costoSeguro']) ? floatval($data['costoSeguro']) : null,
-        'es_courier_4x4' => isset($data['esCourier4x4']) ? boolval($data['esCourier4x4']) : false,
+        'costo_flete' => isset($data['costoFleteInternacionalItem']) && is_numeric($data['costoFleteInternacionalItem']) ? floatval($data['costoFleteInternacionalItem']) : null,
+        'costo_seguro' => isset($data['costoSeguroInternacionalItem']) && is_numeric($data['costoSeguroInternacionalItem']) ? floatval($data['costoSeguroInternacionalItem']) : null,
+        'agente_aduana_prorrateado_item' => isset($data['costoAgenteAduanaItem']) && is_numeric($data['costoAgenteAduanaItem']) ? floatval($data['costoAgenteAduanaItem']) : null,
+        'isd_pagado_item' => isset($data['isdPagadoItem']) && is_numeric($data['isdPagadoItem']) ? floatval($data['isdPagadoItem']) : null,
+        'otros_gastos_prorrateados_item' => isset($data['otrosGastosPostNacionalizacionItem']) && is_numeric($data['otrosGastosPostNacionalizacionItem']) ? floatval($data['otrosGastosPostNacionalizacionItem']) : null,
+        'es_courier_4x4' => isset($data['isShipmentConsidered4x4']) ? boolval($data['isShipmentConsidered4x4']) : (isset($data['esCourier4x4']) ? boolval($data['esCourier4x4']) : false),
+        
         'cif' => floatval($data['cif']),
         'ad_valorem' => floatval($data['adValorem']),
         'fodinfa' => floatval($data['fodinfa']),
@@ -53,17 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
     try {
         if ($action === 'save') {
             $sql = "INSERT INTO calculations (user_id, product_name, tariff_code_id, valor_fob_unitario, cantidad, peso_unitario_kg, 
-                        costo_flete, costo_seguro, es_courier_4x4, cif, ad_valorem, fodinfa, ice, specific_tax, iva, 
+                        costo_flete, costo_seguro, agente_aduana_prorrateado_item, isd_pagado_item, otros_gastos_prorrateados_item, 
+                        es_courier_4x4, cif, ad_valorem, fodinfa, ice, specific_tax, iva, 
                         total_impuestos, costo_total_estimado_linea, profit_percentage_applied, cost_price_unit_after_import, 
                         profit_amount_unit, pvp_unit, pvp_total_line, csv_import_id, csv_import_line_number) 
                     VALUES (:user_id, :product_name, :tariff_code_id, :valor_fob_unitario, :cantidad, :peso_unitario_kg,
-                        :costo_flete, :costo_seguro, :es_courier_4x4, :cif, :ad_valorem, :fodinfa, :ice, :specific_tax, :iva, 
+                        :costo_flete, :costo_seguro, :agente_aduana_prorrateado_item, :isd_pagado_item, :otros_gastos_prorrateados_item, 
+                        :es_courier_4x4, :cif, :ad_valorem, :fodinfa, :ice, :specific_tax, :iva, 
                         :total_impuestos, :costo_total_estimado_linea, :profit_percentage_applied, :cost_price_unit_after_import,
                         :profit_amount_unit, :pvp_unit, :pvp_total_line, :csv_import_id, :csv_import_line_number)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            $lastId = $pdo->lastInsertId();
-            $message = 'Cálculo guardado exitosamente.';
         } else { // action === 'update'
             if (empty($data['id']) || !is_numeric($data['id'])) {
                 sendJsonResponse(['success' => false, 'message' => 'ID de cálculo inválido para actualizar.'], 400);
@@ -71,22 +74,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
             $params['id'] = intval($data['id']);
             $sql = "UPDATE calculations SET product_name = :product_name, tariff_code_id = :tariff_code_id, 
                         valor_fob_unitario = :valor_fob_unitario, cantidad = :cantidad, peso_unitario_kg = :peso_unitario_kg,
-                        costo_flete = :costo_flete, costo_seguro = :costo_seguro, es_courier_4x4 = :es_courier_4x4, 
-                        cif = :cif, ad_valorem = :ad_valorem, fodinfa = :fodinfa, ice = :ice, specific_tax = :specific_tax, iva = :iva, 
-                        total_impuestos = :total_impuestos, costo_total_estimado_linea = :costo_total_estimado_linea, 
-                        profit_percentage_applied = :profit_percentage_applied, cost_price_unit_after_import = :cost_price_unit_after_import,
+                        costo_flete = :costo_flete, costo_seguro = :costo_seguro, 
+                        agente_aduana_prorrateado_item = :agente_aduana_prorrateado_item, 
+                        isd_pagado_item = :isd_pagado_item, 
+                        otros_gastos_prorrateados_item = :otros_gastos_prorrateados_item, 
+                        es_courier_4x4 = :es_courier_4x4, cif = :cif, ad_valorem = :ad_valorem, fodinfa = :fodinfa, ice = :ice, 
+                        specific_tax = :specific_tax, iva = :iva, total_impuestos = :total_impuestos, 
+                        costo_total_estimado_linea = :costo_total_estimado_linea, 
+                        profit_percentage_applied = :profit_percentage_applied, 
+                        cost_price_unit_after_import = :cost_price_unit_after_import,
                         profit_amount_unit = :profit_amount_unit, pvp_unit = :pvp_unit, pvp_total_line = :pvp_total_line,
                         csv_import_id = :csv_import_id, csv_import_line_number = :csv_import_line_number,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = :id AND user_id = :user_id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            if ($stmt->rowCount() === 0) {
-                 sendJsonResponse(['success' => false, 'message' => 'Cálculo no encontrado para este usuario o no se realizaron cambios.'], 404);
-            }
-            $lastId = $data['id'];
-            $message = 'Cálculo actualizado exitosamente.';
         }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        
+        if ($action === 'update' && $stmt->rowCount() === 0) {
+            sendJsonResponse(['success' => false, 'message' => 'Cálculo no encontrado para este usuario o no se realizaron cambios.'], 404);
+        }
+
+        $lastId = ($action === 'save') ? $pdo->lastInsertId() : $params['id'];
+        $message = ($action === 'save') ? 'Cálculo guardado exitosamente.' : 'Cálculo actualizado exitosamente.';
         
         $stmt_fetch = $pdo->prepare("SELECT c.*, tc.code as tariff_code_val, tc.description as tariff_description 
                                      FROM calculations c 
@@ -96,8 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
         $savedCalculation = $stmt_fetch->fetch(PDO::FETCH_ASSOC);
         sendJsonResponse(['success' => true, 'message' => $message, 'calculation' => $savedCalculation]);
 
-    } catch (PDOException $e) {
-        sendJsonResponse(['success' => false, 'message' => 'Error en la operación de base de datos: ' . $e->getMessage()], 500);
+    } catch (PDOException $e) { 
+        sendJsonResponse(['success' => false, 'message' => 'Error en la operación de base de datos: ' . $e->getMessage()], 500); 
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'load') {
      try {
@@ -113,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
             $sql .= " AND c.csv_import_id = :csv_import_id ";
             $queryParams['csv_import_id'] = $csvImportIdFilter;
         }
-        $sql .= " ORDER BY c.csv_import_line_number ASC, c.created_at DESC"; // Ordenar por línea de CSV si aplica
+        $sql .= " ORDER BY c.csv_import_line_number ASC, c.created_at DESC";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute($queryParams);
