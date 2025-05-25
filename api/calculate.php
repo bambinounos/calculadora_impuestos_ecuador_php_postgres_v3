@@ -1,6 +1,6 @@
 */
 
-// --- api/calculate.php ---
+// --- api/calculate.php --- (MODIFICADO para pasar la TASA ISD, no el ISD calculado, a la función central)
 /*
 <?php
 // api/calculate.php
@@ -19,24 +19,27 @@ if (intval($input['cantidad']) <= 0) {
 if (floatval($input['valorFOB']) < 0) {
     sendJsonResponse(['success' => false, 'message' => 'El valor FOB no puede ser negativo.'], 400);
 }
+// Se podrían añadir más validaciones para los otros campos numéricos
 
-
-// Para un cálculo individual, el flag 'esCourier4x4' del ítem determina si SE CONSIDERA 4x4
 $isConsidered4x4 = boolval($input['esCourier4x4'] ?? false); 
-// Aquí, el flete y seguro son los totales para esta línea/ítem específico que el usuario ingresa.
-$costoFleteItem = floatval($input['costoFlete'] ?? 0);
-$costoSeguroItem = floatval($input['costoSeguro'] ?? 0);
-
+$costoFleteInternacionalItem = floatval($input['costoFlete'] ?? 0);
+$costoSeguroInternacionalItem = floatval($input['costoSeguro'] ?? 0);
+$costoAgenteAduanaItem = floatval($input['costoAgenteAduanaItem'] ?? 0); 
+$tasaIsdInputPorcentaje = floatval($input['tasaIsdAplicableItem'] ?? 0); // Tasa ISD en %, ej 5
+$otrosGastosItem = floatval($input['otrosGastosItem'] ?? 0); 
 
 $results = calculateImportationDetails(
     $pdo,
-    floatval($input['valorFOB'] ?? 0), // FOB Unitario
+    floatval($input['valorFOB'] ?? 0), 
     intval($input['cantidad'] ?? 1),
     floatval($input['pesoUnitarioKg'] ?? 0),
-    $costoFleteItem, // Flete total para esta línea
-    $costoSeguroItem, // Seguro total para esta línea
+    $costoFleteInternacionalItem, 
+    $costoSeguroInternacionalItem,
+    $costoAgenteAduanaItem, 
+    ($tasaIsdInputPorcentaje / 100), // Convertir tasa ISD a decimal para la función
+    $otrosGastosItem, 
     $input['tariffCodeId'],
-    $isConsidered4x4, // Para un cálculo individual, este flag del ítem es el que cuenta
+    $isConsidered4x4, 
     floatval($input['profitPercentage'] ?? 0)
 );
 
