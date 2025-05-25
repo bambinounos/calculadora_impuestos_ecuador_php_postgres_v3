@@ -1,6 +1,4 @@
-*/
-
-// --- public/assets/js/main.js --- (MODIFICADO para reflejar el nuevo orden de cálculo y visualización)
+ts/js/main.js --- (COMPLETO Y ACTUALIZADO PARA V9)
 /*
 document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = 'api/';
@@ -149,13 +147,129 @@ document.addEventListener('DOMContentLoaded', () => {
     showRegisterLink?.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; registerForm.style.display = 'block'; authMessage.style.display = 'none'; });
     showLoginLink?.addEventListener('click', (e) => { e.preventDefault(); registerForm.style.display = 'none'; loginForm.style.display = 'block'; authMessage.style.display = 'none'; });
 
-    loginForm?.addEventListener('submit', async (e) => { /* ... como en v8 ... */ });
-    registerForm?.addEventListener('submit', async (e) => { /* ... como en v8 ... */ });
-    async function handleLogout() { /* ... como en v8, limpiar forms y resultados ... */ }
-    async function checkLoginStatus() { /* ... como en v8 ... */ }
-    tariffCodeSearchInput?.addEventListener('input', () => { /* ... como en v8 ... */ });
-    async function loadDefaultTariffCodes() { /* ... como en v8 ... */ }
-    tariffCodeIdSelect?.addEventListener('change', async () => { /* ... como en v8 ... */ });
+    loginForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(loginForm);
+        formData.append('action', 'login');
+        try {
+            const response = await fetch(`${API_BASE_URL}auth.php`, { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data.user;
+                updateAuthUI();
+                displayMessage(authMessage, 'Login exitoso.', true);
+            } else { displayMessage(authMessage, data.message || 'Error en login.', false); }
+        } catch (error) { displayMessage(authMessage, 'Error de conexión.', false); }
+    });
+
+    registerForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(registerForm);
+        formData.append('action', 'register');
+        try {
+            const response = await fetch(`${API_BASE_URL}auth.php`, { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) {
+                displayMessage(authMessage, 'Registro exitoso. Por favor, inicia sesión.', true);
+                registerForm.reset();
+                loginForm.style.display = 'block'; registerForm.style.display = 'none';
+            } else { displayMessage(authMessage, data.message || 'Error en registro.', false); }
+        } catch (error) { displayMessage(authMessage, 'Error de conexión.', false); }
+    });
+
+    async function handleLogout() {
+        try {
+            const response = await fetch(`${API_BASE_URL}auth.php?action=logout`);
+            await response.json(); 
+            currentUser = null;
+            updateAuthUI();
+            currentCalculatedResults = null;
+            lastCsvProcessedData = null;
+            calculatorForm?.reset();
+            csvImportForm?.reset();
+            if(calculationResultsDiv) calculationResultsDiv.style.display = 'none';
+            if(printItemSummaryButton) printItemSummaryButton.style.display = 'none';
+            if(csvResultsDetailsDiv) csvResultsDetailsDiv.innerHTML = '';
+            if(csvResultsSummaryDiv) csvResultsSummaryDiv.innerHTML = '';
+            if(printCsvSummaryButton) printCsvSummaryButton.style.display = 'none';
+        } catch (error) { console.error('Error en logout:', error); }
+    }
+
+    async function checkLoginStatus() {
+        try {
+            const response = await fetch(`${API_BASE_URL}auth.php?action=status`);
+            const data = await response.json();
+            if (data.success && data.loggedIn) { currentUser = data.user; } 
+            else { currentUser = null; }
+        } catch (error) { currentUser = null; }
+        updateAuthUI();
+    }
+
+    tariffCodeSearchInput?.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+            const searchTerm = tariffCodeSearchInput.value.trim();
+            if (searchTerm.length < 2 && searchTerm.length !==0) { 
+                 tariffCodeIdSelect.innerHTML = '<option value="">Ingrese al menos 2 caracteres o seleccione</option>';
+                 tariffDetailsPreview.textContent = ''; return;
+            }
+            if(searchTerm.length === 0){ 
+                tariffCodeIdSelect.innerHTML = '<option value="">Seleccione una partida</option>';
+                tariffDetailsPreview.textContent = ''; loadDefaultTariffCodes(); return;
+            }
+            try {
+                const response = await fetch(`${API_BASE_URL}tariff_codes.php?action=read&term=${encodeURIComponent(searchTerm)}`);
+                const data = await response.json();
+                tariffCodeIdSelect.innerHTML = '<option value="">Seleccione una partida</option>';
+                if (data.success && data.tariff_codes.length > 0) {
+                    data.tariff_codes.forEach(code => {
+                        const option = document.createElement('option');
+                        option.value = code.id;
+                        option.textContent = `${code.code} - ${code.description}`;
+                        tariffCodeIdSelect.appendChild(option);
+                    });
+                } else { tariffCodeIdSelect.innerHTML = '<option value="">No se encontraron partidas</option>'; }
+            } catch (error) { tariffCodeIdSelect.innerHTML = '<option value="">Error al buscar</option>';}
+            tariffDetailsPreview.textContent = ''; 
+        }, 500); 
+    });
+    
+    async function loadDefaultTariffCodes() { 
+        if(!tariffCodeIdSelect) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}tariff_codes.php?action=read`);
+            const data = await response.json();
+            tariffCodeIdSelect.innerHTML = '<option value="">Seleccione una partida</option>'; 
+            if (data.success && data.tariff_codes) {
+                 data.tariff_codes.forEach(code => {
+                    const option = document.createElement('option');
+                    option.value = code.id;
+                    option.textContent = `${code.code} - ${code.description}`;
+                    tariffCodeIdSelect.appendChild(option);
+                });
+            }
+        } catch (error) { console.error("Error cargando partidas por defecto:", error); }
+    }
+
+    tariffCodeIdSelect?.addEventListener('change', async () => {
+        const selectedId = tariffCodeIdSelect.value;
+        tariffDetailsPreview.textContent = ''; 
+        if (selectedId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}tariff_codes.php?action=get_one&id=${selectedId}`);
+                const data = await response.json();
+                if (data.success && data.tariff_code) {
+                    const tc = data.tariff_code;
+                    tariffDetailsPreview.innerHTML = `
+                        AdV: ${(parseFloat(tc.advalorem_rate) * 100).toFixed(2)}%, 
+                        ICE: ${(tc.ice_rate ? parseFloat(tc.ice_rate) * 100 : 0).toFixed(2)}%, 
+                        IVA: ${(parseFloat(tc.iva_rate) * 100).toFixed(2)}%
+                        ${tc.specific_tax_value && parseFloat(tc.specific_tax_value) > 0 ? `, Espec: ${tc.specific_tax_value} ${tc.specific_tax_unit || ''}` : ''}
+                    `;
+                }
+            } catch (error) { console.error("Error obteniendo detalle de partida:", error); }
+        }
+    });
 
     calculatorForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -344,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <tr class="total-row"><td>PVP Total Línea Estimado:</td><td class="text-right">\${calcData.pvp_total_line}</td></tr>
                 </table>
                 <div class="footer-notes">
-                    <p>Este es un cálculo estimado. Verifique con fuentes oficiales de SENAE.</p>
+                    <p>Este es un cálculo estimado basado en las tasas y datos proporcionados. Verifique con fuentes oficiales de SENAE.</p>
                     <p>Tasas base de la partida (\${pInfo.code}): AdValorem \${advRatePercent}%, ICE \${iceRateFromTariffPercent}%, IVA \${ivaRateFromTariffPercent}%.</p>
                 </div>
             </div>
@@ -424,8 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.items_processed_details && data.items_processed_details.length > 0) {
                     let detailsHtml = '<div class="section-title">Detalle por Ítem del CSV</div><table><thead><tr>' +
                                       '<th>Línea</th><th>Desc.</th><th>Partida</th><th>Cant.</th><th>FOB U.</th>' +
-                                      '<th>Flete Ítem</th><th>Seguro Ítem</th><th>Ag.Adu.Ítem</th><th>ISD Ítem</th><th>Otros Gast.Ítem</th><th>CIF Ítem</th>' + 
-                                      '<th>Costo U. Post-Imp.</th><th>PVP U.</th><th>PVP Total Línea</th>' +
+                                      '<th>Flete Ítem</th><th>Seguro Ítem</th><th>Ag.Adu.Ítem</th><th>ISD Ítem</th><th>OtrosGast.Ítem</th>' +
+                                      '<th>CIF Ítem</th><th>Costo U. Post-Imp.</th><th>PVP U.</th><th>PVP Total Línea</th>' +
                                       '</tr></thead><tbody>';
                     data.items_processed_details.forEach(item => {
                         const calc = item.calculation;
