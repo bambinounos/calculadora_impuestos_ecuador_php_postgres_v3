@@ -115,9 +115,41 @@
             <p id="csv-message" class="message" style="display: none;"></p>
         </section>
         
-        <section id="saved-calculations-section" class="container" style="display: none;"> </section>
-        <section id="tariff-management-section" class="container" style="display:none;"> </section>
-        <section id="csv-history-section" class="container" style="display:none;"> </section>
+        <section id="saved-calculations-section" class="container" style="display: none;">
+             <h2>Mis Cálculos Guardados</h2>
+            <div id="saved-calculations-list"></div>
+            <p id="saved-calculations-message" class="message" style="display: none;"></p>
+        </section>
+        
+        <section id="tariff-management-section" class="container" style="display:none;">
+            <h2>Gestionar Partidas Arancelarias</h2>
+            <form id="tariff-code-form">
+                <input type="hidden" id="tariff-edit-id">
+                <div><label>Código Partida (Ej: 8517.12.00.00): <input type="text" id="tariff-code-val" required maxlength="50"></label></div>
+                <div><label>Descripción: <input type="text" id="tariff-description-val" required></label></div>
+                <div><label>Tasa AdValorem (Ej: 0.10 para 10%): <input type="number" step="0.0001" id="tariff-advalorem-val" required value="0.0000"></label></div>
+                <div><label>Tasa ICE (Ej: 0.15 para 15%): <input type="number" step="0.0001" id="tariff-ice-val" value="0.0000"></label></div>
+                <div><label>Tasa IVA (Ej: 0.15 para 15%, 0.00 para 0%): <input type="number" step="0.0001" id="tariff-iva-val" required value="0.1500"></label></div>
+                <div><label>Imp. Específico Valor (Ej: 0.50): <input type="number" step="0.01" id="tariff-specific-value-val" value="0.00"></label></div>
+                <div><label>Imp. Específico Unidad (Ej: USD/Kg, USD/Unidad): <input type="text" id="tariff-specific-unit-val" maxlength="50"></label></div>
+                <div><label><input type="checkbox" id="tariff-fodinfa-applies" checked> Aplica FODINFA (0.5% CIF)</label></div>
+                <div><label>Notas Adicionales: <textarea id="tariff-notes-val"></textarea></label></div>
+                <button type="submit" id="tariff-form-submit-button">Guardar Partida</button>
+                <button type="button" id="tariff-form-cancel-button" style="display:none;">Cancelar Edición</button>
+            </form>
+            <div id="tariff-list-container" style="margin-top:20px;">
+                <h3>Listado de Partidas Existentes (Primeras 50)</h3>
+                <div id="tariff-list"></div>
+            </div>
+            <p id="tariff-message" class="message" style="display: none;"></p>
+        </section>
+
+        <section id="csv-history-section" class="container" style="display:none;">
+            <h2>Historial de Importaciones CSV</h2>
+            <div id="csv-history-list"></div>
+            <p id="csv-history-message" class="message" style="display: none;"></p>
+        </section>
+        
         <div id="printable-area" style="display:none;"></div>
     </main>
     <footer><p>&copy; <?php echo date("Y"); ?> Calculadora de Impuestos Ecuador. Tasas referenciales. Verifique con fuentes oficiales.</p></footer>
