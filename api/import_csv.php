@@ -119,7 +119,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isShipmentActually4x4 = ($granTotalFOBEmbarque <= 400 && $granTotalPesoEmbarqueKg <= 4.0);
         
         $processedItemsDetailsForResponse = []; $calculationErrors = [];
-        $consolidatedTotals = [ /* ... inicializar como en v8 ... */ ];
+        $consolidatedTotals = [
+            'total_items_csv' => count($lineasDelCsv),
+            'gran_total_fob_embarque' => round($granTotalFOBEmbarque, 2),
+            'gran_total_peso_embarque_kg' => round($granTotalPesoEmbarqueKg, 3),
+            'flete_general_aplicado_total' => round($fleteInternacionalGeneral, 2),
+            'seguro_general_aplicado_total' => round($seguroInternacionalGeneral, 2),
+            'gastos_agente_aduana_total_embarque' => round($gastosAgenteAduanaTotal, 2),
+            'tasa_isd_aplicada_embarque' => round($tasaIsdConfigurableEmbarquePorcentaje, 2),
+            'isd_total_pagado_embarque' => round($isdTotalCalculadoEmbarque, 2),
+            'gastos_bodega_aduana_total_embarque' => round($gastosBodegaAduanaTotal, 2),
+            'gastos_demoraje_total_embarque' => round($gastosDemorajeTotal, 2),
+            'gastos_flete_terrestre_total_embarque' => round($gastosFleteTerrestreTotal, 2),
+            'gastos_varios_total_embarque' => round($gastosVariosTotal, 2),
+            'proration_method_used' => $prorationMethod,
+            'embarque_califica_4x4' => $isShipmentActually4x4,
+            'sum_cif_lineas' => 0, 'sum_advalorem_lineas' => 0, 'sum_fodinfa_lineas' => 0,
+            'sum_ice_lineas' => 0, 'sum_specific_tax_lineas' => 0, 'sum_iva_lineas' => 0,
+            'sum_total_impuestos_lineas' => 0, 'sum_costo_total_estimado_lineas' => 0,
+            'sum_pvp_total_lineas' => 0,
+            'sum_isd_pagado_lineas' => 0, 'sum_agente_aduana_lineas' => 0,
+            'sum_otros_gastos_post_nacionalizacion_lineas' => 0
+        ];
         $processedLinesCount = 0;
 
         foreach ($lineasDelCsv as $itemData) {
