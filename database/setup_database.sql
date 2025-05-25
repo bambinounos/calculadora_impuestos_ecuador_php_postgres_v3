@@ -4,7 +4,6 @@
 // --------------------------------------------------------------------------
 // --- 1. Script SQL: setup_database.sql (Actualizado para v9) --------------
 // --------------------------------------------------------------------------
-/*
 -- Archivo: setup_database.sql
 -- Script para crear la estructura de la base de datos PostgreSQL
 -- para la Calculadora de Impuestos de Importación Ecuador V9.
