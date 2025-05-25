@@ -15,7 +15,6 @@ $action = $_REQUEST['action'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 'update')) {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    // Validación de datos esenciales
     if (empty($data['productName']) || !isset($data['tariffCodeId']) || !is_numeric($data['tariffCodeId']) || 
         !isset($data['valorFOBUnitario']) || !is_numeric($data['valorFOBUnitario']) ||
         !isset($data['cantidad']) || !is_numeric($data['cantidad']) || intval($data['cantidad']) <= 0 ||
