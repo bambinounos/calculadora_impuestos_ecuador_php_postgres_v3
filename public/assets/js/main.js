@@ -1,4 +1,7 @@
-ts/js/main.js --- (COMPLETO Y ACTUALIZADO PARA V9)
+</html>
+*/
+
+// --- public/assets/js/main.js --- (COMPLETO Y ACTUALIZADO PARA V9)
 /*
 document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = 'api/';
