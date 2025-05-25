@@ -1,10 +1,9 @@
-<?php
-// Este es un archivo conceptual que agrupa las diferentes partes del proyecto.
-// VERSIÓN 5: Guardado permanente de CSVs subidos, registro de importaciones en BD,
-// y guardado de cada línea CSV procesada en la tabla 'calculations'.
+// Este es un archivo conceptual que agrupa el código completo de los archivos
+// MODIFICADOS o NUEVOS en la Versión 9.
+// Para los archivos que no cambiaron significativamente desde la v8 conceptual, se indicará.
 
 // --------------------------------------------------------------------------
-// --- 0. Estructura de Carpetas Sugerida (con nuevo dir uploads fuera de public) ---
+// --- 0. Estructura de Carpetas Sugerida (Recordatorio) --------------------
 // --------------------------------------------------------------------------
 /*
 calculadora_importacion_php/
@@ -20,126 +19,54 @@ calculadora_importacion_php/
 |   |   |   `-- style.css
 |   |   `-- js/
 |   |       `-- main.js
-|   `-- api/
-|       |-- auth.php
-|       |-- calculate.php
-|       |-- calculations.php
-|       |-- tariff_codes.php
-|       |-- import_csv.php
-|       `-- csv_imports_history.php (NUEVO - para listar historial)
+|   |-- api/
+|   |   |-- auth.php
+|   |   |-- calculate.php
+|   |   |-- calculations.php
+|   |   |-- tariff_codes.php
+|   |   |-- import_csv.php
+|   |   `-- csv_imports_history.php
 |-- uploads/  (FUERA de public, o protegido si está dentro)
-|   `-- csv_files/ (Aquí se guardarán los CSVs subidos)
+|   `-- csv_files/
 |-- .htaccess (en public/ si se usa para enrutar a api/ o proteger carpetas)
 |-- install.php (opcional, como se vio antes)
 |-- setup_database.sql (opcional, como se vio antes)
 */
 
-// --------------------------------------------------------------------------
-// --- 1. Backend: PHP (Modificaciones Clave) -------------------------------
-// --------------------------------------------------------------------------
-
-// --- config/db.php --- (Sin cambios)
-// --- includes/session_handler.php --- (Sin cambios)
-// --- includes/functions.php (calculateImportationDetails) --- (Sin cambios funcionales mayores respecto a v4)
-/*
-/*
-<?php
-// config/db.php
-// Configuración y conexión a la base de datos PostgreSQL usando PDO.
-
-$host = 'localhost'; // o la IP/host de tu servidor PostgreSQL
-$port = '5432';      // Puerto por defecto de PostgreSQL
-$dbname = 'nombre_tu_base_de_datos'; // Reemplaza con el nombre de tu base de datos
-$user = 'tu_usuario_postgres'; // Reemplaza con tu usuario de PostgreSQL
-$password = 'tu_contraseña_postgres'; // Reemplaza con tu contraseña
-
-$dsn = "pgsql:host={$host};port={$port};dbname={$dbname};user={$user};password={$password}";
-
-try {
-    $pdo = new PDO($dsn);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // Descomentar la siguiente línea para probar la conexión al configurar:
-    // if ($pdo) { echo "Conexión a PostgreSQL exitosa!"; }
-} catch (PDOException $e) {
-    // En un entorno de producción, no mostrarías este error directamente al usuario.
-    // Lo ideal es registrar el error y mostrar un mensaje genérico.
-    header('Content-Type: application/json');
-    http_response_code(500); // Internal Server Error
-    echo json_encode(['success' => false, 'message' => 'Error de conexión a la base de datos. Por favor, contacte al administrador.']);
-    // Para depuración, puedes dejar el mensaje original:
-    // die("Error de conexión a la base de datos: " . $e->getMessage());
-    exit;
-}
-?>
-*/
-
-// --- includes/session_handler.php ---
-/*
-<?php
-// includes/session_handler.php
-if (session_status() === PHP_SESSION_NONE) {
-    // Configuración de la cookie de sesión para mayor seguridad
-    session_set_cookie_params([
-        'lifetime' => 3600, // 1 hora
-        'path' => '/',
-        // 'domain' => '.tu_dominio.com', // Descomentar y ajustar en producción
-        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on', // Solo enviar sobre HTTPS
-        'httponly' => true, // Prevenir acceso a la cookie vía JavaScript
-        'samesite' => 'Lax' // Mitiga ataques CSRF
-    ]);
-    session_start();
-}
-
-function isLoggedIn() {
-    return isset($_SESSION['user_id']);
-}
-
-function requireLogin() {
-    if (!isLoggedIn()) {
-        http_response_code(401); // Unauthorized
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Autenticación requerida. Por favor, inicie sesión.']);
-        exit;
-    }
-}
-
-// Regenerar ID de sesión después del login para prevenir fijación de sesión
-function regenerateSessionAfterLogin() {
-    if (isset($_SESSION['user_id'])) { // Asegurarse que el usuario ya está "logueado" en la sesión actual
-        session_regenerate_id(true);
-    }
-}
 // ==========================================================================
-// === ARCHIVOS QUE NO CAMBIARON SIGNIFICATIVAMENTE DESDE LA VERSIÓN 4 ====
+// === ARCHIVOS QUE NO CAMBIARON SIGNIFICATIVAMENTE DESDE LA VERSIÓN 8 ====
 // ==========================================================================
 
 // --- config/db.php ---
 // (Sin cambios. Contiene la configuración de conexión a PostgreSQL con PDO.)
-// (El código completo ya fue proporcionado en el artefacto v4/v5 general.)
+// (El código completo ya fue proporcionado en artefactos anteriores.)
 
 // --- includes/session_handler.php ---
 // (Sin cambios. Maneja el inicio de sesión PHP y funciones como isLoggedIn(), requireLogin().)
-// (El código completo ya fue proporcionado en el artefacto v4/v5 general.)
+// (El código completo ya fue proporcionado en artefactos anteriores.)
 
 // --- api/auth.php ---
 // (Sin cambios funcionales mayores. Maneja registro, login, logout y status de sesión.)
-// (El código completo ya fue proporcionado en el artefacto v4/v5 general.)
-
-// --- api/calculate.php ---
-// (Sin cambios funcionales mayores. Delega el cálculo principal a la función 
-//  `calculateImportationDetails` en `includes/functions.php`.)
-// (El código completo ya fue proporcionado en el artefacto v4/v5 general.)
+// (El código completo ya fue proporcionado en artefactos anteriores.)
 
 // --- api/tariff_codes.php ---
 // (Sin cambios funcionales mayores. Maneja el CRUD para las partidas arancelarias.)
-// (El código completo ya fue proporcionado en el artefacto v4/v5 general.)
+// (El código completo ya fue proporcionado en artefactos anteriores.)
+
+// --- api/csv_imports_history.php ---
+// (Sin cambios funcionales mayores. Lista el historial de importaciones CSV.)
+// (El código completo ya fue proporcionado en artefactos anteriores.)
+
+// --- public/assets/css/style.css ---
+// (Sin cambios funcionales mayores. Los estilos de impresión y generales se mantienen.)
+// (El código completo ya fue proporcionado en artefactos anteriores.)
 
 
 // ==========================================================================
-// === ARCHIVOS MODIFICADOS O NUEVOS EN LA VERSIÓN 5 ========================
+// === ARCHIVOS MODIFICADOS COMPLETOS PARA LA VERSIÓN 9 =====================
 // ==========================================================================
 
-// --- includes/functions.php --- (La función `calculateImportationDetails` es crucial y se incluye completa)
+// --- includes/functions.php --- (MODIFICADO `calculateImportationDetails` para la nueva base del IVA)
 /*
 <?php
 // includes/functions.php
@@ -152,18 +79,21 @@ function sendJsonResponse($data, $statusCode = 200) {
 
 /**
  * Calcula los detalles de importación para un ítem.
- * Recibe el flete y seguro ya asignados/prorrateados para ESTE ítem.
- * Recibe un flag que indica si el EMBARQUE COMPLETO (o el ítem individual) califica como 4x4.
+ * NUEVA LÓGICA V9: ISD y Agente Aduana NO forman parte de la base del IVA.
+ * Se suman al costo total después de todos los impuestos.
  */
 function calculateImportationDetails(
     $pdo, 
     $valorFOBUnitario, 
     $cantidad, 
     $pesoUnitarioKg, 
-    $costoFleteItem,  // Flete ya asignado/prorrateado para esta línea/cantidad de ítems
-    $costoSeguroItem, // Seguro ya asignado/prorrateado para esta línea/cantidad de ítems
+    $costoFleteInternacionalItem,
+    $costoSeguroInternacionalItem,
+    $costoAgenteAduanaItem,      // Gasto de Agente de Aduana prorrateado para esta línea
+    $tasaISDAplicableAlFOB,      // Tasa ISD (ej. 0.05 para 5%) a aplicar sobre el FOB de esta línea
+    $otrosGastosPostNacionalizacionItem, // Suma de bodega, demoraje, flete terrestre, varios YA PRORRATEADOS
     $tariffCodeId, 
-    $isShipmentConsidered4x4, // Booleano: ¿El embarque/ítem es 4x4?
+    $isShipmentConsidered4x4, 
     $profitPercentage
 ) {
     $stmt_tariff = $pdo->prepare("SELECT * FROM tariff_codes WHERE id = :id");
@@ -177,8 +107,13 @@ function calculateImportationDetails(
     $valorFOBTotalLinea = floatval($valorFOBUnitario) * intval($cantidad);
     $pesoTotalLineaKg = floatval($pesoUnitarioKg) * intval($cantidad);
     
-    $cif = $valorFOBTotalLinea + floatval($costoFleteItem) + floatval($costoSeguroItem);
+    // 1. Calcular Valor CIF por Ítem
+    $cif = $valorFOBTotalLinea + floatval($costoFleteInternacionalItem) + floatval($costoSeguroInternacionalItem);
 
+    // 2. Calcular ISD por Ítem (sobre el FOB de esta línea) - Este es un COSTO, no va a base IVA según nueva regla
+    $isdPagadoItem = $valorFOBTotalLinea * floatval($tasaISDAplicableAlFOB); // $tasaISDAplicableAlFOB debe ser decimal (ej. 0.05)
+
+    // Obtener tasas de la partida
     $adValoremRate = floatval($tariffData['advalorem_rate']);
     $iceRate = floatval($tariffData['ice_rate'] ?? 0);
     $ivaRate = floatval($tariffData['iva_rate']); 
@@ -188,13 +123,19 @@ function calculateImportationDetails(
 
     $adValoremCalculado = 0; $fodinfa = 0; $iceCalculado = 0; $ivaCalculado = 0; $specificTaxCalculado = 0;
 
+    // 3. Calcular Base Imponible para IVA por Ítem (AJUSTADA V9)
+    // Base IVA = CIF + AdValorem + FODINFA + ICE + Imp. Específicos
+    // (ISD y Agente Aduana NO se incluyen aquí según la nueva especificación)
+    $baseImponibleIVA = $cif; 
+
     if ($isShipmentConsidered4x4) {
-        if ($ivaRate > 0) $ivaCalculado = 0; 
+        // Para 4x4, AdValorem, FODINFA, ICE, Específicos son 0.
+        if ($ivaRate > 0) $ivaCalculado = 0; // Asumimos 4x4 anula IVA si la partida no es 0% por defecto
     } else { 
         $adValoremCalculado = $cif * $adValoremRate;
         if ($fodinfaApplies) $fodinfa = $cif * 0.005; // 0.5%
         
-        $baseICE = $cif + $adValoremCalculado + $fodinfa;
+        $baseICE = $cif + $adValoremCalculado + $fodinfa; 
         $iceCalculado = $baseICE * $iceRate;
         
         if ($specificTaxValue > 0 && !empty($specificTaxUnit)) {
@@ -205,13 +146,23 @@ function calculateImportationDetails(
             }
         }
         
-        $baseIVA = $cif + $adValoremCalculado + $fodinfa + $iceCalculado + $specificTaxCalculado;
-        $ivaCalculado = $baseIVA * $ivaRate;
+        // Sumar a la base del IVA los tributos calculados (SIN ISD NI AGENTE ADUANA)
+        $baseImponibleIVA += $adValoremCalculado + $fodinfa + $iceCalculado + $specificTaxCalculado;
+        // 4. Calcular IVA por Ítem
+        $ivaCalculado = $baseImponibleIVA * $ivaRate;
     }
 
+    // 5. Calcular Total de Impuestos de Importación por Ítem (AdV, FODINFA, ICE, IVA, Específicos)
     $totalImpuestos = $adValoremCalculado + $fodinfa + $iceCalculado + $ivaCalculado + $specificTaxCalculado;
-    $costoTotalEstimadoLinea = $valorFOBTotalLinea + floatval($costoFleteItem) + floatval($costoSeguroItem) + $totalImpuestos;
+    
+    // 6. Calcular Costo Total del Ítem
+    $costoTotalEstimadoLinea = $cif + // Incluye FOB, Flete Int, Seguro Int
+                               $totalImpuestos + // Suma de AdV, FODINFA, ICE, IVA, Específicos
+                               floatval($isdPagadoItem) + // ISD se suma aquí al costo
+                               floatval($costoAgenteAduanaItem) + // Agente Aduana se suma aquí al costo
+                               floatval($otrosGastosPostNacionalizacionItem); // Bodega, demoraje, etc.
 
+    // 7. Aplicar Ganancia y Calcular PVP por Ítem
     $costPriceUnitAfterImport = ($cantidad > 0) ? ($costoTotalEstimadoLinea / $cantidad) : 0;
     $profitAmountUnit = $costPriceUnitAfterImport * (floatval($profitPercentage) / 100);
     $pvpUnit = $costPriceUnitAfterImport + $profitAmountUnit;
@@ -225,19 +176,24 @@ function calculateImportationDetails(
             'valorFOBTotalLinea'    => round($valorFOBTotalLinea,2),
             'pesoUnitarioKg'        => floatval($pesoUnitarioKg),
             'pesoTotalLineaKg'      => round($pesoTotalLineaKg,3),
-            'costoFleteItem'        => round(floatval($costoFleteItem),2),
-            'costoSeguroItem'       => round(floatval($costoSeguroItem),2),
+            'costoFleteInternacionalItem' => round(floatval($costoFleteInternacionalItem),2),
+            'costoSeguroInternacionalItem'=> round(floatval($costoSeguroInternacionalItem),2),
+            'costoAgenteAduanaItem' => round(floatval($costoAgenteAduanaItem),2),
+            'tasaISDAplicableAlFOB' => floatval($tasaISDAplicableAlFOB) * 100, // Devolver como % para mostrar
+            'isdPagadoItem'         => round(floatval($isdPagadoItem),2),
+            'otrosGastosPostNacionalizacionItem' => round(floatval($otrosGastosPostNacionalizacionItem),2),
             'partidaArancelariaInfo'=> $tariffData,
             'isShipmentConsidered4x4'=> $isShipmentConsidered4x4,
             'profitPercentageApplied'=> floatval($profitPercentage)
         ],
         'cif'                       => round($cif, 2),
+        'baseImponibleIVA'          => round($baseImponibleIVA, 2), // Para transparencia
         'adValorem'                 => round($adValoremCalculado, 2),
         'fodinfa'                   => round($fodinfa, 2),
         'ice'                       => round($iceCalculado, 2),
         'specificTax'               => round($specificTaxCalculado, 2),
         'iva'                       => round($ivaCalculado, 2),
-        'totalImpuestos'            => round($totalImpuestos, 2),
+        'totalImpuestos'            => round($totalImpuestos, 2), // Suma de AdV,Fodinfa,ICE,IVA,Espec
         'costoTotalEstimadoLinea'   => round($costoTotalEstimadoLinea, 2),
         'cost_price_unit_after_import' => round($costPriceUnitAfterImport, 2),
         'profit_amount_unit'        => round($profitAmountUnit, 2),
@@ -245,5 +201,4 @@ function calculateImportationDetails(
         'pvp_total_line'            => round($pvpTotalLinea, 2)
     ];
 }
-?>
 ?>
