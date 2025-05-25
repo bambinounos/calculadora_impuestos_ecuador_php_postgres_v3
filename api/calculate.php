@@ -19,7 +19,6 @@ if (intval($input['cantidad']) <= 0) {
 if (floatval($input['valorFOB']) < 0) {
     sendJsonResponse(['success' => false, 'message' => 'El valor FOB no puede ser negativo.'], 400);
 }
-// Se podrían añadir más validaciones para los otros campos numéricos
 
 $isConsidered4x4 = boolval($input['esCourier4x4'] ?? false); 
 $costoFleteInternacionalItem = floatval($input['costoFlete'] ?? 0);
