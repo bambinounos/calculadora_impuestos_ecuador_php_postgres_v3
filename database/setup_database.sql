@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 COMMENT ON TABLE users IS 'Almacena la información de los usuarios registrados.';
 COMMENT ON COLUMN users.email IS 'Email único del usuario, usado para login.';
 COMMENT ON COLUMN users.password_hash IS 'Contraseña hasheada del usuario.';

@@ -48,11 +48,30 @@
                  <div><label for="cantidad">Cantidad:</label><input type="number" id="cantidad" name="cantidad" value="1" step="1" min="1" required></div>
                 <div><label for="valorFOB">Valor FOB Unitario (USD):</label><input type="number" id="valorFOB" name="valorFOB" step="0.01" min="0" required></div>
                 <div><label for="pesoUnitarioKg">Peso Unitario (Kg):</label><input type="number" id="pesoUnitarioKg" name="pesoUnitarioKg" step="0.001" min="0" value="0"></div>
-                <div><label for="costoFlete">Flete Internacional para este Ítem/Línea (USD):</label><input type="number" id="costoFlete" name="costoFlete" step="0.01" min="0" value="0"></div>
-                <div><label for="costoSeguro">Seguro Internacional para este Ítem/Línea (USD):</label><input type="number" id="costoSeguro" name="costoSeguro" step="0.01" min="0" value="0"></div>
-                <div><label for="costoAgenteAduanaItem">Gastos Agente Aduana para este Ítem (USD):</label><input type="number" id="costoAgenteAduanaItem" name="costoAgenteAduanaItem" step="0.01" min="0" value="0"></div>
-                <div><label for="tasaIsdAplicableItem">Tasa ISD Aplicable a este Ítem (%) (Ej: 5 para 5%):</label><input type="number" id="tasaIsdAplicableItem" name="tasaIsdAplicableItem" step="0.01" min="0" value="5.00"></div>
-                <div><label for="otrosGastosItem">Otros Gastos (Bodega, Demoraje, Flete Terr., etc. USD):</label><input type="number" id="otrosGastosItem" name="otrosGastosItem" step="0.01" min="0" value="0"></div>
+                <!-- Sección de Gastos Generales del Embarque -->
+                <hr>
+                <div class="section-title">Gastos Generales del Embarque Completo (se prorratearán)</div>
+                <div><label for="totalFlete">Flete Internacional Total (USD):</label><input type="number" id="totalFlete" name="totalFlete" step="0.01" min="0" value="0"></div>
+                <div><label for="totalSeguro">Seguro Internacional Total (USD):</label><input type="number" id="totalSeguro" name="totalSeguro" step="0.01" min="0" value="0"></div>
+                <div><label for="totalAgenteAduana">Gasto Agente Aduana Total (USD):</label><input type="number" id="totalAgenteAduana" name="totalAgenteAduana" step="0.01" min="0" value="0"></div>
+                <div><label for="totalAlmacenaje">Gasto Almacenaje Total (USD):</label><input type="number" id="totalAlmacenaje" name="totalAlmacenaje" step="0.01" min="0" value="0"></div>
+                <div><label for="totalFleteInterno">Gasto Flete Interno Total (USD):</label><input type="number" id="totalFleteInterno" name="totalFleteInterno" step="0.01" min="0" value="0"></div>
+                <div><label for="totalDemoraje">Gasto Demoraje Total (USD):</label><input type="number" id="totalDemoraje" name="totalDemoraje" step="0.01" min="0" value="0"></div>
+                <div><label for="totalOtrosGastos">Otros Gastos Varios Totales (USD):</label><input type="number" id="totalOtrosGastos" name="totalOtrosGastos" step="0.01" min="0" value="0"></div>
+                <div><label for="totalISDTasa">Tasa ISD Aplicable al Embarque (%) (Ej: 5 para 5%):</label><input type="number" id="totalISDTasa" name="totalISDTasa" step="0.01" min="0" value="5.00"></div>
+
+                <!-- Sección de Base para Prorrateo -->
+                <hr>
+                <div class="section-title">Base para el Prorrateo</div>
+                <div><label for="totalFOBEmbarque">Valor FOB Total del Embarque (USD):</label><input type="number" id="totalFOBEmbarque" name="totalFOBEmbarque" step="0.01" min="0" value="0"></div>
+                <div><label for="totalPesoEmbarque">Peso Total del Embarque (Kg):</label><input type="number" id="totalPesoEmbarque" name="totalPesoEmbarque" step="0.001" min="0" value="0"></div>
+                <div>
+                    <label for="prorationMethod">Método de Prorrateo:</label>
+                    <select id="prorationMethod" name="prorationMethod">
+                        <option value="fob" selected>Por Valor FOB del Ítem</option>
+                        <option value="weight">Por Peso del Ítem</option>
+                    </select>
+                </div>
                 <div><label for="profitPercentage">Porcentaje de Ganancia Deseado (%):</label><input type="number" id="profitPercentage" name="profitPercentage" step="0.01" min="0" value="20"></div>
                 <div><input type="checkbox" id="esCourier4x4" name="esCourier4x4"><label for="esCourier4x4">¿Este ítem individual se considera bajo régimen Courier 4x4?</label></div>
                 <button type="submit">Calcular Impuestos del Ítem</button>

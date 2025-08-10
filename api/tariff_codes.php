@@ -67,9 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
             $stmt = $pdo->prepare("SELECT id, code, description FROM tariff_codes WHERE code ILIKE :term OR description ILIKE :term ORDER BY code LIMIT 20");
             $stmt->execute([':term' => "%{$searchTerm}%"]);
         } else {
-            $stmt = $pdo->query("SELECT id, code, description FROM tariff_codes ORDER BY code LIMIT 50");
+            $stmt = $pdo->prepare("SELECT id, code, description FROM tariff_codes ORDER BY code LIMIT 50");
+            $stmt->execute();
         }
         $codes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Basic output encoding to prevent XSS. A library or helper function would be better for a real app.
+        foreach ($codes as &$code) {
+            $code['code'] = htmlspecialchars($code['code'], ENT_QUOTES, 'UTF-8');
+            $code['description'] = htmlspecialchars($code['description'], ENT_QUOTES, 'UTF-8');
+        }
         sendJsonResponse(['success' => true, 'tariff_codes' => $codes]);
     } catch (PDOException $e) {
         // Log $e->getMessage()
@@ -86,6 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
         $stmt->execute([':id' => intval($tariff_id)]);
         $tariff_code = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($tariff_code) {
+            // Basic output encoding
+            foreach ($tariff_code as $key => $value) {
+                if (is_string($value)) {
+                    $tariff_code[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                }
+            }
             sendJsonResponse(['success' => true, 'tariff_code' => $tariff_code]);
         } else {
             sendJsonResponse(['success' => false, 'message' => 'Partida arancelaria no encontrada.'], 404);

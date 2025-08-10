@@ -23,14 +23,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const cantidadInput = document.getElementById('cantidad');
     const valorFOBInput = document.getElementById('valorFOB');
     const pesoUnitarioKgInput = document.getElementById('pesoUnitarioKg');
-    const costoFleteInput = document.getElementById('costoFlete');
-    const costoSeguroInput = document.getElementById('costoSeguro');
-    const costoAgenteAduanaItemInput = document.getElementById('costoAgenteAduanaItem');
-    const tasaIsdAplicableItemInput = document.getElementById('tasaIsdAplicableItem');
-    const otrosGastosItemInput = document.getElementById('otrosGastosItem'); 
     const esCourier4x4Checkbox = document.getElementById('esCourier4x4');
     const profitPercentageInput = document.getElementById('profitPercentage');
     
+    // NEW Calculator Elements for Proration
+    const totalFleteInput = document.getElementById('totalFlete');
+    const totalSeguroInput = document.getElementById('totalSeguro');
+    const totalAgenteAduanaInput = document.getElementById('totalAgenteAduana');
+    const totalAlmacenajeInput = document.getElementById('totalAlmacenaje');
+    const totalFleteInternoInput = document.getElementById('totalFleteInterno');
+    const totalDemorajeInput = document.getElementById('totalDemoraje');
+    const totalOtrosGastosInput = document.getElementById('totalOtrosGastos');
+    const totalISDTasaInput = document.getElementById('totalISDTasa');
+    const totalFOBEmbarqueInput = document.getElementById('totalFOBEmbarque');
+    const totalPesoEmbarqueInput = document.getElementById('totalPesoEmbarque');
+    const prorationMethodSelect = document.getElementById('prorationMethod');
+
     const calculationResultsDiv = document.getElementById('calculation-results');
     const resItemDetailsDiv = document.getElementById('res-item-details');
     const resCifSpan = document.getElementById('res-cif');
@@ -279,23 +287,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
     calculatorForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const calculationData = {
+
+        // --- 1. Get Item-specific data ---
+        const item = {
             tariffCodeId: tariffCodeIdSelect.value,
             cantidad: parseInt(cantidadInput.value) || 1,
             valorFOB: parseFloat(valorFOBInput.value) || 0,
-            pesoUnitarioKg: parseFloat(pesoUnitarioKgInput.value) || 0,
-            costoFlete: parseFloat(costoFleteInput.value) || 0, 
-            costoSeguro: parseFloat(costoSeguroInput.value) || 0, 
-            costoAgenteAduanaItem: parseFloat(costoAgenteAduanaItemInput.value) || 0,
-            tasaIsdAplicableItem: parseFloat(tasaIsdAplicableItemInput.value) || 0, 
-            otrosGastosItem: parseFloat(otrosGastosItemInput.value) || 0,
+            pesoUnitarioKg: parseFloat(pesoUnitarioKgInput.value) || 0
+        };
+
+        // --- 2. Get Total Shipment data ---
+        const shipment = {
+            totalFlete: parseFloat(totalFleteInput.value) || 0,
+            totalSeguro: parseFloat(totalSeguroInput.value) || 0,
+            totalAgenteAduana: parseFloat(totalAgenteAduanaInput.value) || 0,
+            totalAlmacenaje: parseFloat(totalAlmacenajeInput.value) || 0,
+            totalFleteInterno: parseFloat(totalFleteInternoInput.value) || 0,
+            totalDemoraje: parseFloat(totalDemorajeInput.value) || 0,
+            totalOtrosGastos: parseFloat(totalOtrosGastosInput.value) || 0,
+            totalISDTasa: parseFloat(totalISDTasaInput.value) || 0,
+            totalFOB: parseFloat(totalFOBEmbarqueInput.value) || 0,
+            totalPeso: parseFloat(totalPesoEmbarqueInput.value) || 0,
+            prorationMethod: prorationMethodSelect.value
+        };
+
+        // --- 3. Basic Validation ---
+        if (!item.tariffCodeId) { displayMessage(calculatorMessage, 'Por favor, seleccione una partida arancelaria.', false); return; }
+        if (item.cantidad <= 0) { displayMessage(calculatorMessage, 'La cantidad debe ser mayor a cero.', false); return; }
+        if (shipment.prorationMethod === 'fob' && shipment.totalFOB <= 0) {
+             displayMessage(calculatorMessage, 'El FOB Total del Embarque debe ser mayor a cero para prorratear por valor.', false); return;
+        }
+        if (shipment.prorationMethod === 'weight' && shipment.totalPeso <= 0) {
+             displayMessage(calculatorMessage, 'El Peso Total del Embarque debe ser mayor a cero para prorratear por peso.', false); return;
+        }
+
+        // --- 4. Calculate Proration Factor ---
+        let prorationFactor = 0;
+        const itemFOBTotal = item.valorFOB * item.cantidad;
+        const itemPesoTotal = item.pesoUnitarioKg * item.cantidad;
+
+        if (shipment.prorationMethod === 'fob' && shipment.totalFOB > 0) {
+            prorationFactor = itemFOBTotal / shipment.totalFOB;
+        } else if (shipment.prorationMethod === 'weight' && shipment.totalPeso > 0) {
+            prorationFactor = itemPesoTotal / shipment.totalPeso;
+        }
+
+        // --- 5. Calculate Prorated Costs for the Item ---
+        const proratedFlete = shipment.totalFlete * prorationFactor;
+        const proratedSeguro = shipment.totalSeguro * prorationFactor;
+        const proratedAgenteAduana = shipment.totalAgenteAduana * prorationFactor;
+
+        // Sum of other post-nationalization costs to be prorated
+        const totalOtrosGastosSum = shipment.totalAlmacenaje + shipment.totalFleteInterno + shipment.totalDemoraje + shipment.totalOtrosGastos;
+        const proratedOtrosGastos = totalOtrosGastosSum * prorationFactor;
+
+        // --- 6. Prepare data for the API call ---
+        const calculationData = {
+            tariffCodeId: item.tariffCodeId,
+            cantidad: item.cantidad,
+            valorFOB: item.valorFOB,
+            pesoUnitarioKg: item.pesoUnitarioKg,
+            costoFlete: proratedFlete,
+            costoSeguro: proratedSeguro,
+            costoAgenteAduanaItem: proratedAgenteAduana,
+            tasaIsdAplicableItem: shipment.totalISDTasa, // ISD Rate is for the whole shipment
+            otrosGastosItem: proratedOtrosGastos,
             esCourier4x4: esCourier4x4Checkbox.checked,
             profitPercentage: parseFloat(profitPercentageInput.value) || 0
         };
 
-        if (!calculationData.tariffCodeId) { displayMessage(calculatorMessage, 'Por favor, seleccione una partida arancelaria.', false); return; }
-        if (calculationData.cantidad <= 0) { displayMessage(calculatorMessage, 'La cantidad debe ser mayor a cero.', false); return; }
-
+        // --- 7. Call the API ---
         try {
             const response = await fetch(`${API_BASE_URL}calculate.php`, { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(calculationData)
@@ -311,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>FOB Unitario: USD ${ci.valorFOBUnitario.toFixed(2)} x ${ci.cantidad} = <strong>FOB Total Ítem: USD ${ci.valorFOBTotalLinea.toFixed(2)}</strong></p>
                     <p>Peso Unitario: ${ci.pesoUnitarioKg.toFixed(3)} Kg x ${ci.cantidad} = <strong>Peso Total Ítem: ${ci.pesoTotalLineaKg.toFixed(3)} Kg</strong></p>
                     <p>Partida: ${pInfo.code} - ${pInfo.description}</p>
-                    <p>Flete Ítem: USD ${ci.costoFleteInternacionalItem.toFixed(2)} | Seguro Ítem: USD ${ci.costoSeguroInternacionalItem.toFixed(2)}</p>
+                    <p>Flete Ítem (Prorrateado): USD ${ci.costoFleteInternacionalItem.toFixed(2)} | Seguro Ítem (Prorrateado): USD ${ci.costoSeguroInternacionalItem.toFixed(2)}</p>
                     <p>Régimen 4x4 Aplicado (para este ítem): ${ci.isShipmentConsidered4x4 ? 'Sí' : 'No'}</p> 
                 `;
                 if(resCifSpan) resCifSpan.textContent = data.cif;
@@ -442,7 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <small>Guardado: ${new Date(calc.created_at).toLocaleDateString()} ${calc.csv_import_line_number ? `(CSV Línea: ${calc.csv_import_line_number})` : ''}</small>
                 </div>
                 <div class="actions">
-                    <button class="edit-calc" data-id="${calc.id}">Editar</button>
+                    <!-- Editing old calculations is disabled due to the new proration form structure -->
+                    <!-- <button class="edit-calc" data-id="${calc.id}">Editar</button> -->
                     <button class="delete-calc" data-id="${calc.id}">Eliminar</button>
                 </div>
             `;
@@ -450,6 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         savedCalculationsListDiv.appendChild(ul);
 
+        /* Editing old calculations is disabled due to new proration form structure.
         document.querySelectorAll('.edit-calc').forEach(button => {
             button.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
@@ -457,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (calcToEdit) loadCalculationForEdit(calcToEdit);
             });
         });
+        */
         document.querySelectorAll('.delete-calc').forEach(button => {
             button.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
@@ -465,89 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function loadCalculationForEdit(calc) {
-        productNameInput.value = calc.product_name;
-        tariffCodeIdSelect.value = calc.tariff_code_id; 
-        if(calc.tariff_code_id) { tariffCodeIdSelect.dispatchEvent(new Event('change')); }
-        
-        cantidadInput.value = calc.cantidad;
-        valorFOBInput.value = calc.valor_fob_unitario;
-        pesoUnitarioKgInput.value = calc.peso_unitario_kg || '';
-        costoFleteInput.value = calc.costo_flete || ''; 
-        costoSeguroInput.value = calc.costo_seguro || ''; 
-        costoAgenteAduanaItemInput.value = calc.agente_aduana_prorrateado_item || '';
-        // Para la tasa ISD, si no se guarda explícitamente, se recalcula o se usa un default.
-        // Asumimos que el `isd_pagado_item` y el FOB de la línea están disponibles.
-        const fobTotalLineaCalc = parseFloat(calc.valor_fob_unitario) * parseInt(calc.cantidad);
-        tasaIsdAplicableItemInput.value = (fobTotalLineaCalc > 0 && calc.isd_pagado_item) ? 
-                                          ((parseFloat(calc.isd_pagado_item) / fobTotalLineaCalc) * 100).toFixed(2) : '5.00';
-        otrosGastosItemInput.value = calc.otros_gastos_prorrateados_item || '';
-        esCourier4x4Checkbox.checked = !!calc.es_courier_4x4;
-        profitPercentageInput.value = calc.profit_percentage_applied || '0';
-        editingCalculationIdInput.value = calc.id;
-
-        // Simular la estructura de currentCalculatedResults para mostrar en el formulario
-        currentCalculatedResults = {
-            success: true,
-            calculoInput: {
-                valorFOBUnitario: parseFloat(calc.valor_fob_unitario),
-                cantidad: parseInt(calc.cantidad),
-                valorFOBTotalLinea: fobTotalLineaCalc,
-                pesoUnitarioKg: parseFloat(calc.peso_unitario_kg || 0),
-                pesoTotalLineaKg: (parseFloat(calc.peso_unitario_kg || 0)) * parseInt(calc.cantidad),
-                costoFleteInternacionalItem: parseFloat(calc.costo_flete || 0),
-                costoSeguroInternacionalItem: parseFloat(calc.costo_seguro || 0),
-                costoAgenteAduanaItem: parseFloat(calc.agente_aduana_prorrateado_item || 0),
-                tasaISDAplicableAlFOB: parseFloat(tasaIsdAplicableItemInput.value),
-                isdPagadoItem: parseFloat(calc.isd_pagado_item || 0),
-                otrosGastosPostNacionalizacionItem: parseFloat(calc.otros_gastos_prorrateados_item || 0),
-                partidaArancelariaInfo: { id: calc.tariff_code_id, code: calc.tariff_code_val, description: calc.tariff_description, advalorem_rate:0, iva_rate:0, ice_rate:0 }, // Simplificado, obtener tasas reales si se necesita recalcular preview
-                isShipmentConsidered4x4: !!calc.es_courier_4x4,
-                profitPercentageApplied: parseFloat(calc.profit_percentage_applied)
-            },
-            cif: calc.cif, 
-            baseImponibleIVA: calc.base_imponible_iva || ((parseFloat(calc.cif) + parseFloat(calc.ad_valorem) + parseFloat(calc.fodinfa) + parseFloat(calc.ice) + parseFloat(calc.specific_tax)).toFixed(2)),
-            adValorem: calc.ad_valorem, fodinfa: calc.fodinfa, ice: calc.ice,
-            specificTax: calc.specific_tax, iva: calc.iva, totalImpuestos: calc.total_impuestos,
-            costoTotalEstimadoLinea: calc.costo_total_estimado_linea,
-            cost_price_unit_after_import: calc.cost_price_unit_after_import,
-            profit_amount_unit: calc.profit_amount_unit,
-            pvp_unit: calc.pvp_unit,
-            pvp_total_line: calc.pvp_total_line
-        };
-        
-        const ci = currentCalculatedResults.calculoInput;
-        resItemDetailsDiv.innerHTML = `
-            <p>FOB Unitario: USD ${ci.valorFOBUnitario.toFixed(2)} x ${ci.cantidad} = <strong>FOB Total Ítem: USD ${ci.valorFOBTotalLinea.toFixed(2)}</strong></p>
-            <p>Peso Unitario: ${ci.pesoUnitarioKg.toFixed(3)} Kg x ${ci.cantidad} = <strong>Peso Total Ítem: ${ci.pesoTotalLineaKg.toFixed(3)} Kg</strong></p>
-            <p>Partida: ${calc.tariff_code_val || 'N/A'} - ${calc.tariff_description || 'N/A'}</p>
-            <p>Flete Ítem: USD ${ci.costoFleteInternacionalItem.toFixed(2)} | Seguro Ítem: USD ${ci.costoSeguroInternacionalItem.toFixed(2)}</p>
-            <p>Régimen 4x4 Aplicado: ${ci.isShipmentConsidered4x4 ? 'Sí' : 'No'}</p>
-        `;
-        if(resCifSpan) resCifSpan.textContent = calc.cif; 
-        if(resBaseIvaSpan) resBaseIvaSpan.textContent = currentCalculatedResults.baseImponibleIVA;
-        if(resAdValoremSpan) resAdValoremSpan.textContent = calc.ad_valorem; 
-        if(resFodinfaSpan) resFodinfaSpan.textContent = calc.fodinfa; 
-        if(resIceSpan) resIceSpan.textContent = calc.ice;
-        if(resSpecificTaxSpan) resSpecificTaxSpan.textContent = calc.specific_tax; 
-        if(resIvaSpan) resIvaSpan.textContent = calc.iva;
-        if(resTotalImpuestosSpan) resTotalImpuestosSpan.textContent = calc.total_impuestos;
-        if(resAgenteAduanaItemSpan) resAgenteAduanaItemSpan.textContent = ci.costoAgenteAduanaItem.toFixed(2);
-        if(resIsdTasaItemSpan) resIsdTasaItemSpan.textContent = ci.tasaISDAplicableAlFOB.toFixed(2);
-        if(resIsdItemSpan) resIsdItemSpan.textContent = ci.isdPagadoItem.toFixed(2);
-        if(resOtrosGastosItemSpan) resOtrosGastosItemSpan.textContent = ci.otrosGastosPostNacionalizacionItem.toFixed(2);
-        if(resCostoTotalLineaSpan) resCostoTotalLineaSpan.textContent = calc.costo_total_estimado_linea;
-        if(resCostUnitFinalSpan) resCostUnitFinalSpan.textContent = calc.cost_price_unit_after_import;
-        if(resProfitPercentageAppliedSpan) resProfitPercentageAppliedSpan.textContent = ci.profitPercentageApplied.toFixed(2);
-        if(resProfitAmountUnitSpan) resProfitAmountUnitSpan.textContent = calc.profit_amount_unit;
-        if(resPvpUnitSpan) resPvpUnitSpan.textContent = calc.pvp_unit;
-        if(resPvpTotalLineSpan) resPvpTotalLineSpan.textContent = calc.pvp_total_line;
-        
-        calculationResultsDiv.style.display = 'block';
-        printItemSummaryButton.style.display = 'inline-block';
-        saveCalculationButton.textContent = 'Actualizar Cálculo';
-        window.scrollTo(0, calculatorForm.offsetTop);
-    }
+    // function loadCalculationForEdit(calc) { ... } // This function is now disabled
 
     async function deleteCalculation(id) {
          try {
