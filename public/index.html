@@ -36,72 +36,97 @@
         </section>
 
         <section id="calculator-section" class="container" style="display: none;">
-            <h2>Calcular Impuestos por Ítem</h2>
-            <form id="tax-calculator-form">
-                <div><label for="productName">Nombre del Producto/Cálculo (para guardar):</label><input type="text" id="productName" name="productName"></div>
-                <div>
-                    <label for="tariff-code-search">Buscar Partida Arancelaria (código o descripción):</label>
-                    <input type="text" id="tariff-code-search" placeholder="Ej: 8703.23 o Celular">
-                    <select id="tariffCodeId" name="tariffCodeId" required><option value="">Seleccione una partida o busque arriba</option></select>
-                    <div id="tariff-details-preview"></div>
-                </div>
-                 <div><label for="cantidad">Cantidad:</label><input type="number" id="cantidad" name="cantidad" value="1" step="1" min="1" required></div>
-                <div><label for="valorFOB">Valor FOB Unitario (USD):</label><input type="number" id="valorFOB" name="valorFOB" step="0.01" min="0" required></div>
-                <div><label for="pesoUnitarioKg">Peso Unitario (Kg):</label><input type="number" id="pesoUnitarioKg" name="pesoUnitarioKg" step="0.001" min="0" value="0"></div>
-                <!-- Sección de Gastos Generales del Embarque -->
-                <hr>
-                <div class="section-title">Gastos Generales del Embarque Completo (se prorratearán)</div>
-                <div><label for="totalFlete">Flete Internacional Total (USD):</label><input type="number" id="totalFlete" name="totalFlete" step="0.01" min="0" value="0"></div>
-                <div><label for="totalSeguro">Seguro Internacional Total (USD):</label><input type="number" id="totalSeguro" name="totalSeguro" step="0.01" min="0" value="0"></div>
-                <div><label for="totalAgenteAduana">Gasto Agente Aduana Total (USD):</label><input type="number" id="totalAgenteAduana" name="totalAgenteAduana" step="0.01" min="0" value="0"></div>
-                <div><label for="totalAlmacenaje">Gasto Almacenaje Total (USD):</label><input type="number" id="totalAlmacenaje" name="totalAlmacenaje" step="0.01" min="0" value="0"></div>
-                <div><label for="totalFleteInterno">Gasto Flete Interno Total (USD):</label><input type="number" id="totalFleteInterno" name="totalFleteInterno" step="0.01" min="0" value="0"></div>
-                <div><label for="totalDemoraje">Gasto Demoraje Total (USD):</label><input type="number" id="totalDemoraje" name="totalDemoraje" step="0.01" min="0" value="0"></div>
-                <div><label for="totalOtrosGastos">Otros Gastos Varios Totales (USD):</label><input type="number" id="totalOtrosGastos" name="totalOtrosGastos" step="0.01" min="0" value="0"></div>
-                <div><label for="totalISDTasa">Tasa ISD Aplicable al Embarque (%) (Ej: 5 para 5%):</label><input type="number" id="totalISDTasa" name="totalISDTasa" step="0.01" min="0" value="5.00"></div>
+            <h2>Calculadora de Embarque Manual</h2>
 
-                <!-- Sección de Base para Prorrateo -->
+            <!-- 1. Form for Total Shipment Costs -->
+            <div class="section-title">1. Costos y Datos Generales del Embarque</div>
+            <form id="shipment-costs-form" class="data-form">
+                <div class="grid-container">
+                    <div><label for="totalFlete">Flete Internacional Total (USD):</label><input type="number" id="totalFlete" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalSeguro">Seguro Internacional Total (USD):</label><input type="number" id="totalSeguro" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalAgenteAduana">Gasto Agente Aduana Total (USD):</label><input type="number" id="totalAgenteAduana" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalAlmacenaje">Gasto Almacenaje Total (USD):</label><input type="number" id="totalAlmacenaje" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalFleteInterno">Gasto Flete Interno Total (USD):</label><input type="number" id="totalFleteInterno" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalDemoraje">Gasto Demoraje Total (USD):</label><input type="number" id="totalDemoraje" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalOtrosGastos">Otros Gastos Varios Totales (USD):</label><input type="number" id="totalOtrosGastos" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalISDTasa">Tasa ISD Aplicable (%) (Ej: 5):</label><input type="number" id="totalISDTasa" step="0.01" min="0" value="5.00"></div>
+                </div>
                 <hr>
                 <div class="section-title">Base para el Prorrateo</div>
-                <div><label for="totalFOBEmbarque">Valor FOB Total del Embarque (USD):</label><input type="number" id="totalFOBEmbarque" name="totalFOBEmbarque" step="0.01" min="0" value="0"></div>
-                <div><label for="totalPesoEmbarque">Peso Total del Embarque (Kg):</label><input type="number" id="totalPesoEmbarque" name="totalPesoEmbarque" step="0.001" min="0" value="0"></div>
-                <div>
-                    <label for="prorationMethod">Método de Prorrateo:</label>
-                    <select id="prorationMethod" name="prorationMethod">
-                        <option value="fob" selected>Por Valor FOB del Ítem</option>
-                        <option value="weight">Por Peso del Ítem</option>
-                    </select>
+                <div class="grid-container">
+                    <div><label for="totalFOBEmbarque">Valor FOB Total del Embarque (USD):</label><input type="number" id="totalFOBEmbarque" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalPesoEmbarque">Peso Total del Embarque (Kg):</label><input type="number" id="totalPesoEmbarque" step="0.001" min="0" value="0"></div>
+                    <div>
+                        <label for="prorationMethod">Método de Prorrateo:</label>
+                        <select id="prorationMethod">
+                            <option value="fob" selected>Por Valor FOB del Ítem</option>
+                            <option value="weight">Por Peso del Ítem</option>
+                        </select>
+                    </div>
                 </div>
-                <div><label for="profitPercentage">Porcentaje de Ganancia Deseado (%):</label><input type="number" id="profitPercentage" name="profitPercentage" step="0.01" min="0" value="20"></div>
-                <div><input type="checkbox" id="esCourier4x4" name="esCourier4x4"><label for="esCourier4x4">¿Este ítem individual se considera bajo régimen Courier 4x4?</label></div>
-                <button type="submit">Calcular Impuestos del Ítem</button>
-                <button type="button" id="save-calculation-button" style="display: none;">Guardar Cálculo</button>
-                <button type="button" id="print-item-summary-button" style="display: none;">Imprimir Resumen Ítem</button>
-                <input type="hidden" id="editing-calculation-id" value="">
+                 <div><input type="checkbox" id="esCourier4x4" name="esCourier4x4"><label for="esCourier4x4">¿El embarque completo se considera bajo régimen Courier 4x4?</label></div>
             </form>
-            <div id="calculation-results" class="results-box" style="display: none;">
-                <h3>Resultados Estimados del Ítem:</h3>
-                <div id="res-item-details"></div>
-                <p>Valor CIF: USD <span id="res-cif"></span></p>
-                <p>Base Imponible IVA: USD <span id="res-base-iva"></span></p> <hr>
-                <p>Ad Valorem: USD <span id="res-advalorem"></span></p>
-                <p>FODINFA: USD <span id="res-fodinfa"></span></p>
-                <p>ICE: USD <span id="res-ice"></span></p>
-                <p>Imp. Específico: USD <span id="res-specifictax"></span></p>
-                <p>IVA: USD <span id="res-iva"></span></p>
-                <p><strong>Total Impuestos (AdV,FOD,ICE,IVA,Esp): USD <span id="res-total-impuestos"></span></strong></p>
-                <hr>
-                <p>ISD Pagado (sobre FOB): USD <span id="res-isd-item"></span> (<span id="res-isd-tasa-item"></span>%)</p>
-                <p>Gastos Agente Aduana Aplicados: USD <span id="res-agente-aduana-item"></span></p>
-                <p>Otros Gastos (Bodega, Flete Terr, etc.): USD <span id="res-otros-gastos-item"></span></p>
-                <p><strong>Costo Total Línea (Post-Importación y Gastos): USD <span id="res-costo-total-linea"></span></strong></p>
-                <hr>
-                <p>Costo Unitario (Post-Importación y Gastos): USD <span id="res-cost-unit-final"></span></p>
-                <p>Ganancia Aplicada (<span id="res-profit-percentage-applied"></span>%): USD <span id="res-profit-amount-unit"></span> (por unidad)</p>
-                <h4>PVP Unitario Estimado: USD <span id="res-pvp-unit"></span></h4>
-                <h4>PVP Total Línea Estimado: USD <span id="res-pvp-total-line"></span></h4>
+
+            <hr>
+
+            <!-- 2. Form for Adding a Single Item -->
+            <div class="section-title">2. Añadir Productos al Embarque</div>
+            <form id="add-item-form" class="data-form">
+                <input type="hidden" id="item-edit-index">
+                <div class="grid-container item-form-grid">
+                    <div><label for="item-productName">Nombre Producto:</label><input type="text" id="item-productName" required></div>
+                    <div>
+                        <label for="item-tariff-code-search">Buscar Partida:</label>
+                        <input type="text" id="item-tariff-code-search" placeholder="Código o descripción">
+                        <select id="item-tariffCodeId" required><option value="">Seleccione o busque</option></select>
+                    </div>
+                    <div><label for="item-cantidad">Cantidad:</label><input type="number" id="item-cantidad" value="1" step="1" min="1" required></div>
+                    <div><label for="item-valorFOB">Valor FOB Unitario (USD):</label><input type="number" id="item-valorFOB" step="0.01" min="0" required></div>
+                    <div><label for="item-pesoUnitarioKg">Peso Unitario (Kg):</label><input type="number" id="item-pesoUnitarioKg" step="0.001" min="0" value="0"></div>
+                    <div><label for="item-profitPercentage">Ganancia (%):</label><input type="number" id="item-profitPercentage" step="0.01" min="0" value="20"></div>
+                </div>
+                <button type="submit">Añadir Producto</button>
+                <button type="button" id="cancel-edit-item-button" style="display:none;">Cancelar Edición</button>
+            </form>
+
+            <hr>
+
+            <!-- 3. Table of Added Items -->
+            <div class="section-title">3. Productos en el Embarque</div>
+            <div id="shipment-items-container">
+                <table id="shipment-items-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Partida</th>
+                            <th>Cant.</th>
+                            <th>FOB U.</th>
+                            <th>Peso U.</th>
+                            <th>Ganancia</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Items will be added here by JavaScript -->
+                    </tbody>
+                </table>
             </div>
-            <p id="calculator-message" class="message" style="display: none;"></p>
+
+            <hr>
+
+            <!-- 4. Main Calculate Button -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="button" id="calculate-shipment-button" class="primary-action">Calcular Embarque Completo</button>
+            </div>
+
+            <!-- 5. New Results Area -->
+            <div id="shipment-results-area" style="display: none; margin-top: 20px;">
+                <div id="shipment-results-summary" class="results-box"></div>
+                <div id="shipment-results-details" class="results-box" style="margin-top: 20px;"></div>
+                 <button type="button" id="print-shipment-summary-button" style="display: none; margin-top: 10px;">Imprimir Resumen del Embarque</button>
+            </div>
+
+            <p id="shipment-message" class="message" style="display: none;"></p>
         </section>
 
         <section id="csv-import-section" class="container" style="display:none;">
