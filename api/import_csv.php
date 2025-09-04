@@ -52,28 +52,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lineasDelCsv = []; $granTotalFOBEmbarque = 0; $granTotalPesoEmbarqueKg = 0; $parseErrors = []; $totalLinesInCsvFile = 0;
 
         if (($handle = fopen($storedFilePath, "r")) !== FALSE) {
-            $header = fgetcsv($handle); $csvLineCounter = 1; 
+            $header = array_map('trim', fgetcsv($handle));
+            $colMap = array_flip($header);
+            $csvLineCounter = 1;
+
             while (($row = fgetcsv($handle)) !== FALSE) {
                 $csvLineCounter++; $totalLinesInCsvFile++;
-                if (count($row) < 4) { $parseErrors[] = "Línea CSV {$csvLineCounter}: Número de columnas insuficiente."; continue; }
-                
-                $partidaCodigoCsv = trim($row[0] ?? '');
-                $cantidadCsv = intval($row[1] ?? 0);
-                $pesoUnitarioCsv = floatval($row[2] ?? 0);
-                $fobUnitarioCsv = floatval($row[3] ?? 0);
-                $descripcionCsv = trim($row[4] ?? ('Ítem CSV ' . $partidaCodigoCsv . ' L' . $csvLineCounter));
-                $profitLinea = (isset($row[5]) && is_numeric($row[5])) ? floatval($row[5]) : $profitPercentageGeneral;
+                $rowData = array_combine($header, $row);
+
+                $partidaCodigoCsv = trim($rowData['partida_codigo'] ?? '');
+                $cantidadCsv = intval($rowData['cantidad'] ?? 0);
+                $pesoUnitarioCsv = floatval($rowData['peso_kg_unitario'] ?? 0);
+                $fobUnitarioCsv = floatval($rowData['fob_usd_unitario'] ?? 0);
+                $descripcionCsv = trim($rowData['descripcion'] ?? ('Ítem CSV ' . $partidaCodigoCsv . ' L' . $csvLineCounter));
+                $profitLinea = (isset($rowData['profit_percent']) && is_numeric($rowData['profit_percent'])) ? floatval($rowData['profit_percent']) : $profitPercentageGeneral;
+                $skuCsv = trim($rowData['sku'] ?? null);
+                $fleteDirectoCsv = (isset($rowData['flete_item_directo']) && is_numeric($rowData['flete_item_directo'])) ? floatval($rowData['flete_item_directo']) : null;
+                $seguroDirectoCsv = (isset($rowData['seguro_item_directo']) && is_numeric($rowData['seguro_item_directo'])) ? floatval($rowData['seguro_item_directo']) : null;
 
                 if (empty($partidaCodigoCsv) || $cantidadCsv <= 0 || $fobUnitarioCsv < 0 || $pesoUnitarioCsv < 0) {
-                    $parseErrors[] = "Línea CSV {$csvLineCounter}: Datos básicos inválidos (Partida: '{$partidaCodigoCsv}', Cant: {$cantidadCsv}, FOB U: {$fobUnitarioCsv}, Peso U: {$pesoUnitarioCsv}).";
+                    $parseErrors[] = "Línea CSV {$csvLineCounter}: Datos básicos inválidos (Partida, Cantidad, FOB, Peso).";
                     continue;
                 }
                 $stmt_check_tariff = $pdo->prepare("SELECT id FROM tariff_codes WHERE code = :code");
                 $stmt_check_tariff->execute([':code' => $partidaCodigoCsv]);
                 if (!$stmt_check_tariff->fetch()) {
-                     $parseErrors[] = "Línea CSV {$csvLineCounter}: Partida Arancelaria '{$partidaCodigoCsv}' no existe en la base de datos.";
+                     $parseErrors[] = "Línea CSV {$csvLineCounter}: Partida Arancelaria '{$partidaCodigoCsv}' no existe en la BD.";
                      continue;
                 }
+
                 $fobTotalLinea = $fobUnitarioCsv * $cantidadCsv;
                 $pesoTotalLinea = $pesoUnitarioCsv * $cantidadCsv;
                 $lineasDelCsv[] = [
@@ -81,6 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'cantidad' => $cantidadCsv, 'peso_unitario_kg' => $pesoUnitarioCsv,
                     'fob_unitario_usd' => $fobUnitarioCsv, 'descripcion' => $descripcionCsv,
                     'profit_percentage_linea' => $profitLinea,
+                    'sku' => $skuCsv,
+                    'flete_directo' => $fleteDirectoCsv,
+                    'seguro_directo' => $seguroDirectoCsv,
                     'fob_total_linea' => $fobTotalLinea, 'peso_total_linea' => $pesoTotalLinea
                 ];
                 $granTotalFOBEmbarque += $fobTotalLinea;
@@ -150,9 +160,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($prorationMethod === 'weight' && $granTotalPesoEmbarqueKg > 0) {
                 $factorProrrateo = $itemData['peso_total_linea'] / $granTotalPesoEmbarqueKg;
             } elseif (count($lineasDelCsv) > 0) { $factorProrrateo = 1 / count($lineasDelCsv); }
-            
-            $fleteInternacionalItemProrrateado = $fleteInternacionalGeneral * $factorProrrateo;
-            $seguroInternacionalItemProrrateado = $seguroInternacionalGeneral * $factorProrrateo;
+
+            $fleteInternacionalItem = isset($itemData['flete_directo']) ? $itemData['flete_directo'] : ($fleteInternacionalGeneral * $factorProrrateo);
+            $seguroInternacionalItem = isset($itemData['seguro_directo']) ? $itemData['seguro_directo'] : ($seguroInternacionalGeneral * $factorProrrateo);
             $agenteAduanaItemProrrateado = $gastosAgenteAduanaTotal * $factorProrrateo;
             $otrosGastosPostNacionalizacionItemProrrateado = $totalOtrosGastosPostNacionalizacion * $factorProrrateo;
 
@@ -162,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $itemCalculationResult = calculateImportationDetails(
                 $pdo, $itemData['fob_unitario_usd'], $itemData['cantidad'], $itemData['peso_unitario_kg'], 
-                $fleteInternacionalItemProrrateado, $seguroInternacionalItemProrrateado, 
+                $fleteInternacionalItem, $seguroInternacionalItem,
                 $agenteAduanaItemProrrateado, 
                 ($tasaIsdConfigurableEmbarquePorcentaje / 100), 
                 $otrosGastosPostNacionalizacionItemProrrateado,
@@ -174,6 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $calcInput = $itemCalculationResult['calculoInput'];
                 $params_save_item = [
                     ':user_id' => $userId, ':product_name' => $itemData['descripcion'],
+                    ':product_sku' => $itemData['sku'],
                     ':tariff_code_id' => $tariffRow['id'], ':valor_fob_unitario' => $calcInput['valorFOBUnitario'],
                     ':cantidad' => $calcInput['cantidad'], ':peso_unitario_kg' => $calcInput['pesoUnitarioKg'],
                     ':costo_flete' => $calcInput['costoFleteInternacionalItem'], 
@@ -194,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':pvp_total_line' => $itemCalculationResult['pvp_total_line'],
                     ':csv_import_id' => $csvImportId, ':csv_import_line_number' => $itemData['line_csv_num']
                 ];
-                $stmt_save_item = $pdo->prepare("INSERT INTO calculations (user_id, product_name, tariff_code_id, valor_fob_unitario, cantidad, peso_unitario_kg, costo_flete, costo_seguro, agente_aduana_prorrateado_item, isd_pagado_item, otros_gastos_prorrateados_item, es_courier_4x4, cif, ad_valorem, fodinfa, ice, specific_tax, iva, total_impuestos, costo_total_estimado_linea, profit_percentage_applied, cost_price_unit_after_import, profit_amount_unit, pvp_unit, pvp_total_line, csv_import_id, csv_import_line_number) VALUES (:user_id, :product_name, :tariff_code_id, :valor_fob_unitario, :cantidad, :peso_unitario_kg, :costo_flete, :costo_seguro, :agente_aduana_prorrateado_item, :isd_pagado_item, :otros_gastos_prorrateados_item, :es_courier_4x4, :cif, :ad_valorem, :fodinfa, :ice, :specific_tax, :iva, :total_impuestos, :costo_total_estimado_linea, :profit_percentage_applied, :cost_price_unit_after_import, :profit_amount_unit, :pvp_unit, :pvp_total_line, :csv_import_id, :csv_import_line_number)");
+                $stmt_save_item = $pdo->prepare("INSERT INTO calculations (user_id, product_name, product_sku, tariff_code_id, valor_fob_unitario, cantidad, peso_unitario_kg, costo_flete, costo_seguro, agente_aduana_prorrateado_item, isd_pagado_item, otros_gastos_prorrateados_item, es_courier_4x4, cif, ad_valorem, fodinfa, ice, specific_tax, iva, total_impuestos, costo_total_estimado_linea, profit_percentage_applied, cost_price_unit_after_import, profit_amount_unit, pvp_unit, pvp_total_line, csv_import_id, csv_import_line_number) VALUES (:user_id, :product_name, :product_sku, :tariff_code_id, :valor_fob_unitario, :cantidad, :peso_unitario_kg, :costo_flete, :costo_seguro, :agente_aduana_prorrateado_item, :isd_pagado_item, :otros_gastos_prorrateados_item, :es_courier_4x4, :cif, :ad_valorem, :fodinfa, :ice, :specific_tax, :iva, :total_impuestos, :costo_total_estimado_linea, :profit_percentage_applied, :cost_price_unit_after_import, :profit_amount_unit, :pvp_unit, :pvp_total_line, :csv_import_id, :csv_import_line_number)");
                 $stmt_save_item->execute($params_save_item);
 
                 $processedItemsDetailsForResponse[] = [

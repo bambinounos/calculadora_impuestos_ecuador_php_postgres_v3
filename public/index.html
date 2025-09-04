@@ -45,10 +45,10 @@
                     <div><label for="totalFlete">Flete Internacional Total (USD):</label><input type="number" id="totalFlete" step="0.01" min="0" value="0"></div>
                     <div><label for="totalSeguro">Seguro Internacional Total (USD):</label><input type="number" id="totalSeguro" step="0.01" min="0" value="0"></div>
                     <div><label for="totalAgenteAduana">Gasto Agente Aduana Total (USD):</label><input type="number" id="totalAgenteAduana" step="0.01" min="0" value="0"></div>
-                    <div><label for="totalAlmacenaje">Gasto Almacenaje Total (USD):</label><input type="number" id="totalAlmacenaje" step="0.01" min="0" value="0"></div>
-                    <div><label for="totalFleteInterno">Gasto Flete Interno Total (USD):</label><input type="number" id="totalFleteInterno" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalBodegaAduana">Gasto Bodega Aduana Total (USD):</label><input type="number" id="totalBodegaAduana" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalFleteTerrestre">Gasto Flete Terrestre Total (USD):</label><input type="number" id="totalFleteTerrestre" step="0.01" min="0" value="0"></div>
                     <div><label for="totalDemoraje">Gasto Demoraje Total (USD):</label><input type="number" id="totalDemoraje" step="0.01" min="0" value="0"></div>
-                    <div><label for="totalOtrosGastos">Otros Gastos Varios Totales (USD):</label><input type="number" id="totalOtrosGastos" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalGastosVarios">Otros Gastos Varios Totales (USD):</label><input type="number" id="totalGastosVarios" step="0.01" min="0" value="0"></div>
                     <div><label for="totalISDTasa">Tasa ISD Aplicable (%) (Ej: 5):</label><input type="number" id="totalISDTasa" step="0.01" min="0" value="5.00"></div>
                 </div>
                 <hr>
@@ -132,7 +132,7 @@
         <section id="csv-import-section" class="container" style="display:none;">
             <h2>Importar y Calcular desde CSV</h2>
             <form id="csv-import-form" enctype="multipart/form-data">
-                <div><label for="csvFile">Seleccionar archivo CSV:</label><input type="file" id="csvFile" name="csvFile" accept=".csv, text/csv" required><small>Formato: partida_codigo, cantidad, peso_kg_unitario, fob_usd_unitario, [descripcion (opc)], [profit_percentage_linea (opc)]</small></div>
+                <div><label for="csvFile">Seleccionar archivo CSV:</label><input type="file" id="csvFile" name="csvFile" accept=".csv, text/csv" required><small>Formato: partida_codigo, cantidad, peso_kg_unitario, fob_usd_unitario, [descripcion], [profit_percent], [sku], [flete_item_directo], [seguro_item_directo]</small></div>
                 <hr><div class="section-title">Costos Generales del Embarque (se prorratearán)</div>
                 <div><label for="fleteGeneralCsv">Flete Internacional General (USD):</label><input type="number" id="fleteGeneralCsv" name="fleteGeneralCsv" step="0.01" min="0" value="0"></div>
                 <div><label for="seguroGeneralCsv">Seguro Internacional General (USD):</label><input type="number" id="seguroGeneralCsv" name="seguroGeneralCsv" step="0.01" min="0" value="0"></div>

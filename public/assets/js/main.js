@@ -21,10 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalFleteInput = document.getElementById('totalFlete');
     const totalSeguroInput = document.getElementById('totalSeguro');
     const totalAgenteAduanaInput = document.getElementById('totalAgenteAduana');
-    const totalAlmacenajeInput = document.getElementById('totalAlmacenaje');
-    const totalFleteInternoInput = document.getElementById('totalFleteInterno');
+    const totalBodegaAduanaInput = document.getElementById('totalBodegaAduana');
+    const totalFleteTerrestreInput = document.getElementById('totalFleteTerrestre');
     const totalDemorajeInput = document.getElementById('totalDemoraje');
-    const totalOtrosGastosInput = document.getElementById('totalOtrosGastos');
+    const totalGastosVariosInput = document.getElementById('totalGastosVarios');
     const totalISDTasaInput = document.getElementById('totalISDTasa');
     const totalFOBEmbarqueInput = document.getElementById('totalFOBEmbarque');
     const totalPesoEmbarqueInput = document.getElementById('totalPesoEmbarque');
@@ -740,10 +740,10 @@ document.addEventListener('DOMContentLoaded', () => {
             totalFlete: parseFloat(totalFleteInput.value) || 0,
             totalSeguro: parseFloat(totalSeguroInput.value) || 0,
             totalAgenteAduana: parseFloat(totalAgenteAduanaInput.value) || 0,
-            totalAlmacenaje: parseFloat(totalAlmacenajeInput.value) || 0,
-            totalFleteInterno: parseFloat(totalFleteInternoInput.value) || 0,
+            totalBodegaAduana: parseFloat(totalBodegaAduanaInput.value) || 0,
+            totalFleteTerrestre: parseFloat(totalFleteTerrestreInput.value) || 0,
             totalDemoraje: parseFloat(totalDemorajeInput.value) || 0,
-            totalOtrosGastos: parseFloat(totalOtrosGastosInput.value) || 0,
+            totalGastosVarios: parseFloat(totalGastosVariosInput.value) || 0,
             totalISDTasa: parseFloat(totalISDTasaInput.value) || 0,
             totalFOB: parseFloat(totalFOBEmbarqueInput.value) || 0,
             totalPeso: parseFloat(totalPesoEmbarqueInput.value) || 0,
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const proratedFlete = shipment.totalFlete * prorationFactor;
             const proratedSeguro = shipment.totalSeguro * prorationFactor;
             const proratedAgenteAduana = shipment.totalAgenteAduana * prorationFactor;
-            const totalOtrosGastosSum = shipment.totalAlmacenaje + shipment.totalFleteInterno + shipment.totalDemoraje + shipment.totalOtrosGastos;
+            const totalOtrosGastosSum = shipment.totalBodegaAduana + shipment.totalFleteTerrestre + shipment.totalDemoraje + shipment.totalGastosVarios;
             const proratedOtrosGastos = totalOtrosGastosSum * prorationFactor;
 
             // --- 5. Prepare data for the API call ---
