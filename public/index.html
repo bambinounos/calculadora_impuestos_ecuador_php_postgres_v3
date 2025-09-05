@@ -48,6 +48,16 @@
                     <div><label for="totalAlmacenaje">Gasto Almacenaje Total (USD):</label><input type="number" id="totalAlmacenaje" step="0.01" min="0" value="0"></div>
                     <div><label for="totalFleteInterno">Gasto Flete Interno Total (USD):</label><input type="number" id="totalFleteInterno" step="0.01" min="0" value="0"></div>
                     <div><label for="totalDemoraje">Gasto Demoraje Total (USD):</label><input type="number" id="totalDemoraje" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalDevolucionContenedor">Costo Devolución Contenedor (USD):</label><input type="number" id="totalDevolucionContenedor" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalDocFeeDestino">Doc. Fee Destino (USD):</label><input type="number" id="totalDocFeeDestino" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalFreetimeExt">Extensión Freetime (USD):</label><input type="number" id="totalFreetimeExt" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalHeavyLoad">Heavy Load Surcharge (USD):</label><input type="number" id="totalHeavyLoad" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalContainerProtect">Container Protect (USD):</label><input type="number" id="totalContainerProtect" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalDropOff">Drop Off Charge (USD):</label><input type="number" id="totalDropOff" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalImportService">Servicio de Importación (USD):</label><input type="number" id="totalImportService" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalTerminalHandling">Manejo de Terminal (USD):</label><input type="number" id="totalTerminalHandling" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalTransportDoc">Emisión Doc. Transporte (USD):</label><input type="number" id="totalTransportDoc" step="0.01" min="0" value="0"></div>
+                    <div><label for="totalGastosBancarios">Gastos Bancarios (USD):</label><input type="number" id="totalGastosBancarios" step="0.01" min="0" value="0"></div>
                     <div><label for="totalOtrosGastos">Otros Gastos Varios Totales (USD):</label><input type="number" id="totalOtrosGastos" step="0.01" min="0" value="0"></div>
                     <div><label for="totalISDTasa">Tasa ISD Aplicable (%) (Ej: 5):</label><input type="number" id="totalISDTasa" step="0.01" min="0" value="5.00"></div>
                 </div>
@@ -141,6 +151,16 @@
                 <div><label for="gastosBodegaAduanaCsv">Total Gastos Bodega Aduana (USD):</label><input type="number" id="gastosBodegaAduanaCsv" name="gastosBodegaAduanaCsv" step="0.01" min="0" value="0"></div>
                 <div><label for="gastosDemorajeCsv">Total Gastos Demoraje (USD):</label><input type="number" id="gastosDemorajeCsv" name="gastosDemorajeCsv" step="0.01" min="0" value="0"></div>
                 <div><label for="gastosFleteTerrestreCsv">Total Gastos Flete Terrestre Local (USD):</label><input type="number" id="gastosFleteTerrestreCsv" name="gastosFleteTerrestreCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosDevolucionContenedorCsv">Costo Devolución Contenedor (USD):</label><input type="number" id="gastosDevolucionContenedorCsv" name="gastosDevolucionContenedorCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosDocFeeDestinoCsv">Doc. Fee Destino (USD):</label><input type="number" id="gastosDocFeeDestinoCsv" name="gastosDocFeeDestinoCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosFreetimeExtCsv">Extensión Freetime (USD):</label><input type="number" id="gastosFreetimeExtCsv" name="gastosFreetimeExtCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosHeavyLoadCsv">Heavy Load Surcharge (USD):</label><input type="number" id="gastosHeavyLoadCsv" name="gastosHeavyLoadCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosContainerProtectCsv">Container Protect (USD):</label><input type="number" id="gastosContainerProtectCsv" name="gastosContainerProtectCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosDropOffCsv">Drop Off Charge (USD):</label><input type="number" id="gastosDropOffCsv" name="gastosDropOffCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosServicioImportacionCsv">Servicio de Importación (USD):</label><input type="number" id="gastosServicioImportacionCsv" name="gastosServicioImportacionCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosManejoTerminalCsv">Manejo de Terminal (USD):</label><input type="number" id="gastosManejoTerminalCsv" name="gastosManejoTerminalCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosEmisionDocumentoTransporteCsv">Emisión Doc. Transporte (USD):</label><input type="number" id="gastosEmisionDocumentoTransporteCsv" name="gastosEmisionDocumentoTransporteCsv" step="0.01" min="0" value="0"></div>
+                <div><label for="gastosBancariosCsv">Gastos Bancarios (USD):</label><input type="number" id="gastosBancariosCsv" name="gastosBancariosCsv" step="0.01" min="0" value="0"></div>
                 <div><label for="gastosVariosCsv">Total Gastos Varios Adicionales (USD):</label><input type="number" id="gastosVariosCsv" name="gastosVariosCsv" step="0.01" min="0" value="0"></div>
                 <hr>
                 <div>
@@ -157,6 +177,20 @@
             <div id="csv-results-details" style="margin-top:10px; max-height: 400px; overflow-y:auto;"></div>
             <button type="button" id="print-csv-summary-button" style="display: none; margin-top: 10px;">Imprimir Resumen CSV</button>
             <p id="csv-message" class="message" style="display: none;"></p>
+
+            <!-- V10: Staging Area for CSV data editing -->
+            <div id="csv-staging-area" class="container" style="display:none; margin-top: 20px;">
+                <div class="section-title">3. Revisar y Completar Datos del CSV</div>
+                <p>Por favor, revise los datos cargados. Si una partida arancelaria no fue encontrada, búsquela y selecciónela para cada fila. Puede editar todos los campos antes de proceder.</p>
+                <div id="csv-staging-table-container">
+                    <!-- Staging table will be built here by JavaScript -->
+                </div>
+                <button type="button" id="add-staging-row-button">Añadir Fila</button>
+                <hr>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" id="calculate-staged-shipment-button" class="primary-action">Calcular y Guardar Embarque Final</button>
+                </div>
+            </div>
         </section>
         
         <section id="saved-calculations-section" class="container" style="display: none;">
