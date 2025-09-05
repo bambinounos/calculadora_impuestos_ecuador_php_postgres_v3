@@ -63,7 +63,6 @@ CREATE TABLE IF NOT EXISTS calculations (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     product_name VARCHAR(255) NOT NULL,
-    product_sku VARCHAR(255) NULL,
     tariff_code_id INTEGER, 
     valor_fob_unitario NUMERIC(12, 2) NOT NULL,
     cantidad INTEGER DEFAULT 1,

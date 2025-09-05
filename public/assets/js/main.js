@@ -21,10 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalFleteInput = document.getElementById('totalFlete');
     const totalSeguroInput = document.getElementById('totalSeguro');
     const totalAgenteAduanaInput = document.getElementById('totalAgenteAduana');
-    const totalBodegaAduanaInput = document.getElementById('totalBodegaAduana');
-    const totalFleteTerrestreInput = document.getElementById('totalFleteTerrestre');
+    const totalAlmacenajeInput = document.getElementById('totalAlmacenaje');
+    const totalFleteInternoInput = document.getElementById('totalFleteInterno');
     const totalDemorajeInput = document.getElementById('totalDemoraje');
-    const totalGastosVariosInput = document.getElementById('totalGastosVarios');
+    const totalDevolucionContenedorInput = document.getElementById('totalDevolucionContenedor');
+    const totalDocFeeDestinoInput = document.getElementById('totalDocFeeDestino');
+    const totalFreetimeExtInput = document.getElementById('totalFreetimeExt');
+    const totalHeavyLoadInput = document.getElementById('totalHeavyLoad');
+    const totalContainerProtectInput = document.getElementById('totalContainerProtect');
+    const totalDropOffInput = document.getElementById('totalDropOff');
+    const totalImportServiceInput = document.getElementById('totalImportService');
+    const totalTerminalHandlingInput = document.getElementById('totalTerminalHandling');
+    const totalTransportDocInput = document.getElementById('totalTransportDoc');
+    const totalGastosBancariosInput = document.getElementById('totalGastosBancarios');
+    const totalOtrosGastosInput = document.getElementById('totalOtrosGastos');
     const totalISDTasaInput = document.getElementById('totalISDTasa');
     const totalFOBEmbarqueInput = document.getElementById('totalFOBEmbarque');
     const totalPesoEmbarqueInput = document.getElementById('totalPesoEmbarque');
@@ -65,6 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const gastosBodegaAduanaCsvInput = document.getElementById('gastosBodegaAduanaCsv');
     const gastosDemorajeCsvInput = document.getElementById('gastosDemorajeCsv');
     const gastosFleteTerrestreCsvInput = document.getElementById('gastosFleteTerrestreCsv');
+    const gastosDevolucionContenedorCsvInput = document.getElementById('gastosDevolucionContenedorCsv');
+    const gastosDocFeeDestinoCsvInput = document.getElementById('gastosDocFeeDestinoCsv');
+    const gastosFreetimeExtCsvInput = document.getElementById('gastosFreetimeExtCsv');
+    const gastosHeavyLoadCsvInput = document.getElementById('gastosHeavyLoadCsv');
+    const gastosContainerProtectCsvInput = document.getElementById('gastosContainerProtectCsv');
+    const gastosDropOffCsvInput = document.getElementById('gastosDropOffCsv');
+    const gastosServicioImportacionCsvInput = document.getElementById('gastosServicioImportacionCsv');
+    const gastosManejoTerminalCsvInput = document.getElementById('gastosManejoTerminalCsv');
+    const gastosEmisionDocumentoTransporteCsvInput = document.getElementById('gastosEmisionDocumentoTransporteCsv');
+    const gastosBancariosCsvInput = document.getElementById('gastosBancariosCsv');
     const gastosVariosCsvInput = document.getElementById('gastosVariosCsv');
     const prorationMethodCsvSelect = document.getElementById('prorationMethodCsv');
     const profitPercentageCsvInput = document.getElementById('profitPercentageCsv');
@@ -72,6 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const csvResultsDetailsDiv = document.getElementById('csv-results-details');
     const printCsvSummaryButton = document.getElementById('print-csv-summary-button');
     const csvMessage = document.getElementById('csv-message');
+
+    // V10 Staging Area Elements
+    const csvStagingArea = document.getElementById('csv-staging-area');
+    const csvStagingTableContainer = document.getElementById('csv-staging-table-container');
+    const addStagingRowButton = document.getElementById('add-staging-row-button');
+    const calculateStagedShipmentButton = document.getElementById('calculate-staged-shipment-button');
 
     // Saved Calculations Elements
     const savedCalculationsSection = document.getElementById('saved-calculations-section');
@@ -105,7 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentUser = null;
     let currentCalculatedResults = null; 
-    let lastCsvProcessedData = null;    
+    let lastCsvProcessedData = null;
+    let stagedShipmentCosts = null; // V10: To store general costs during staging
     let debounceTimer;
     let shipmentItems = []; // Array to store items for manual shipment calculation
 
@@ -360,6 +387,16 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('gastosBodegaAduanaCsv', gastosBodegaAduanaCsvInput.value || '0');
         formData.append('gastosDemorajeCsv', gastosDemorajeCsvInput.value || '0');
         formData.append('gastosFleteTerrestreCsv', gastosFleteTerrestreCsvInput.value || '0');
+        formData.append('gastosDevolucionContenedorCsv', gastosDevolucionContenedorCsvInput.value || '0');
+        formData.append('gastosDocFeeDestinoCsv', gastosDocFeeDestinoCsvInput.value || '0');
+        formData.append('gastosFreetimeExtCsv', gastosFreetimeExtCsvInput.value || '0');
+        formData.append('gastosHeavyLoadCsv', gastosHeavyLoadCsvInput.value || '0');
+        formData.append('gastosContainerProtectCsv', gastosContainerProtectCsvInput.value || '0');
+        formData.append('gastosDropOffCsv', gastosDropOffCsvInput.value || '0');
+        formData.append('gastosServicioImportacionCsv', gastosServicioImportacionCsvInput.value || '0');
+        formData.append('gastosManejoTerminalCsv', gastosManejoTerminalCsvInput.value || '0');
+        formData.append('gastosEmisionDocumentoTransporteCsv', gastosEmisionDocumentoTransporteCsvInput.value || '0');
+        formData.append('gastosBancariosCsv', gastosBancariosCsvInput.value || '0');
         formData.append('gastosVariosCsv', gastosVariosCsvInput.value || '0');
         formData.append('prorationMethodCsv', prorationMethodCsvSelect.value); 
         
@@ -740,10 +777,20 @@ document.addEventListener('DOMContentLoaded', () => {
             totalFlete: parseFloat(totalFleteInput.value) || 0,
             totalSeguro: parseFloat(totalSeguroInput.value) || 0,
             totalAgenteAduana: parseFloat(totalAgenteAduanaInput.value) || 0,
-            totalBodegaAduana: parseFloat(totalBodegaAduanaInput.value) || 0,
-            totalFleteTerrestre: parseFloat(totalFleteTerrestreInput.value) || 0,
+            totalAlmacenaje: parseFloat(totalAlmacenajeInput.value) || 0,
+            totalFleteInterno: parseFloat(totalFleteInternoInput.value) || 0,
             totalDemoraje: parseFloat(totalDemorajeInput.value) || 0,
-            totalGastosVarios: parseFloat(totalGastosVariosInput.value) || 0,
+            totalDevolucionContenedor: parseFloat(totalDevolucionContenedorInput.value) || 0,
+            totalDocFeeDestino: parseFloat(totalDocFeeDestinoInput.value) || 0,
+            totalFreetimeExt: parseFloat(totalFreetimeExtInput.value) || 0,
+            totalHeavyLoad: parseFloat(totalHeavyLoadInput.value) || 0,
+            totalContainerProtect: parseFloat(totalContainerProtectInput.value) || 0,
+            totalDropOff: parseFloat(totalDropOffInput.value) || 0,
+            totalImportService: parseFloat(totalImportServiceInput.value) || 0,
+            totalTerminalHandling: parseFloat(totalTerminalHandlingInput.value) || 0,
+            totalTransportDoc: parseFloat(totalTransportDocInput.value) || 0,
+            totalGastosBancarios: parseFloat(totalGastosBancariosInput.value) || 0,
+            totalOtrosGastos: parseFloat(totalOtrosGastosInput.value) || 0,
             totalISDTasa: parseFloat(totalISDTasaInput.value) || 0,
             totalFOB: parseFloat(totalFOBEmbarqueInput.value) || 0,
             totalPeso: parseFloat(totalPesoEmbarqueInput.value) || 0,
@@ -775,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const proratedFlete = shipment.totalFlete * prorationFactor;
             const proratedSeguro = shipment.totalSeguro * prorationFactor;
             const proratedAgenteAduana = shipment.totalAgenteAduana * prorationFactor;
-            const totalOtrosGastosSum = shipment.totalBodegaAduana + shipment.totalFleteTerrestre + shipment.totalDemoraje + shipment.totalGastosVarios;
+            const totalOtrosGastosSum = shipment.totalAlmacenaje + shipment.totalFleteInterno + shipment.totalDemoraje + shipment.totalDevolucionContenedor + shipment.totalDocFeeDestino + shipment.totalFreetimeExt + shipment.totalHeavyLoad + shipment.totalContainerProtect + shipment.totalDropOff + shipment.totalImportService + shipment.totalTerminalHandling + shipment.totalTransportDoc + shipment.totalGastosBancarios + shipment.totalOtrosGastos;
             const proratedOtrosGastos = totalOtrosGastosSum * prorationFactor;
 
             // --- 5. Prepare data for the API call ---
@@ -879,6 +926,264 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         shipmentResultsSummaryDiv.innerHTML = summaryHtml;
     }
+
+    // --- V10 Staging Area Logic ---
+
+    function buildStagingTable(items) {
+        csvStagingTableContainer.innerHTML = ''; // Clear previous table
+        if (!items || items.length === 0) {
+            csvStagingTableContainer.innerHTML = '<p>No se encontraron ítems en el archivo CSV.</p>';
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'results-table'; // Reuse existing styles
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Partida Arancelaria</th>
+                    <th>Descripción</th>
+                    <th>Cantidad</th>
+                    <th>Peso Unit. (Kg)</th>
+                    <th>FOB Unit. (USD)</th>
+                    <th>Profit (%)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+        items.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.dataset.index = index;
+            tr.innerHTML = `
+                <td>
+                    <div class="tariff-search-container">
+                        <input type="text" class="staging-tariff-search" value="${item.partida_codigo || ''}" placeholder="Buscar partida...">
+                        <select class="staging-tariff-select" data-selected-id="">
+                            ${item.partida_codigo ? `<option value="${item.partida_codigo}">${item.partida_codigo}</option>` : '<option value="">Seleccione...</option>'}
+                        </select>
+                    </div>
+                </td>
+                <td><input type="text" class="staging-input" data-field="descripcion" value="${item.descripcion || ''}"></td>
+                <td><input type="number" class="staging-input" data-field="cantidad" value="${item.cantidad || 0}" step="1" min="0"></td>
+                <td><input type="number" class="staging-input" data-field="peso_unitario_kg" value="${item.peso_unitario_kg || 0}" step="0.001" min="0"></td>
+                <td><input type="number" class="staging-input" data-field="fob_unitario_usd" value="${item.fob_unitario_usd || 0}" step="0.01" min="0"></td>
+                <td><input type="number" class="staging-input" data-field="profit_percentage_linea" value="${item.profit_percentage_linea || 20}" step="0.01" min="0"></td>
+                <td><button type="button" class="delete-staging-row">Eliminar</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        csvStagingTableContainer.appendChild(table);
+
+        // Add event listeners for the new dynamic elements
+        csvStagingTableContainer.querySelectorAll('.staging-tariff-search').forEach(input => {
+            input.addEventListener('input', (e) => handleStagingTariffSearch(e));
+        });
+        csvStagingTableContainer.querySelectorAll('.delete-staging-row').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.target.closest('tr').remove();
+            });
+        });
+    }
+
+    async function handleStagingTariffSearch(event) {
+        const input = event.target;
+        const select = input.nextElementSibling;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+            const searchTerm = input.value.trim();
+            if (searchTerm.length < 2) {
+                select.innerHTML = '<option value="">...</option>';
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE_URL}tariff_codes.php?action=read&term=${encodeURIComponent(searchTerm)}`);
+                const data = await response.json();
+                select.innerHTML = '<option value="">Seleccione una partida</option>';
+                if (data.success && data.tariff_codes.length > 0) {
+                    data.tariff_codes.forEach(code => {
+                        const option = document.createElement('option');
+                        option.value = code.code; // Store the code itself
+                        option.dataset.id = code.id; // Store the ID separately
+                        option.textContent = `${code.code} - ${code.description}`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No se encontraron</option>';
+                }
+            } catch (error) {
+                select.innerHTML = '<option value="">Error</option>';
+            }
+        }, 500);
+    }
+
+    addStagingRowButton?.addEventListener('click', () => {
+        const tbody = csvStagingTableContainer.querySelector('tbody');
+        if (!tbody) return;
+
+        const tr = document.createElement('tr');
+        // Simplified empty row, user fills everything
+        tr.innerHTML = `
+            <td>
+                <div class="tariff-search-container">
+                    <input type="text" class="staging-tariff-search" value="" placeholder="Buscar partida...">
+                    <select class="staging-tariff-select"><option value="">Seleccione...</option></select>
+                </div>
+            </td>
+            <td><input type="text" class="staging-input" data-field="descripcion" value=""></td>
+            <td><input type="number" class="staging-input" data-field="cantidad" value="1" step="1" min="0"></td>
+            <td><input type="number" class="staging-input" data-field="peso_unitario_kg" value="0" step="0.001" min="0"></td>
+            <td><input type="number" class="staging-input" data-field="fob_unitario_usd" value="0" step="0.01" min="0"></td>
+            <td><input type="number" class="staging-input" data-field="profit_percentage_linea" value="20" step="0.01" min="0"></td>
+            <td><button type="button" class="delete-staging-row">Eliminar</button></td>
+        `;
+        tbody.appendChild(tr);
+
+        // Attach listeners to the new row's elements
+        tr.querySelector('.staging-tariff-search').addEventListener('input', (e) => handleStagingTariffSearch(e));
+        tr.querySelector('.delete-staging-row').addEventListener('click', (e) => {
+            e.target.closest('tr').remove();
+        });
+    });
+
+    calculateStagedShipmentButton?.addEventListener('click', async () => {
+        const items = [];
+        const rows = csvStagingTableContainer.querySelectorAll('tbody tr');
+        let validationError = false;
+
+        rows.forEach(row => {
+            const item = {};
+            const tariffSelect = row.querySelector('.staging-tariff-select');
+            const selectedOption = tariffSelect.options[tariffSelect.selectedIndex];
+
+            if (!selectedOption || !selectedOption.value) {
+                displayMessage(csvMessage, 'Todas las filas deben tener una partida arancelaria seleccionada.', false);
+                tariffSelect.style.border = '1px solid red';
+                validationError = true;
+                return;
+            }
+            tariffSelect.style.border = '';
+
+            item.partida_codigo = selectedOption.value;
+            row.querySelectorAll('.staging-input').forEach(input => {
+                item[input.dataset.field] = input.value;
+            });
+            items.push(item);
+        });
+
+        if (validationError) return;
+
+        const payload = {
+            general_costs: stagedShipmentCosts,
+            items: items
+        };
+
+        displayMessage(csvMessage, 'Calculando embarque final...', true);
+        csvStagingArea.style.display = 'none'; // Hide staging area while calculating
+
+        try {
+            const response = await fetch(`${API_BASE_URL}process_staged_import.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            if (data.success || (data.items_processed_details && data.items_processed_details.length > 0)) {
+                displayMessage(csvMessage, data.message, data.success);
+                displayFinalCsvResults(data); // V10: Display final results
+                if (data.success) loadCsvImportHistory();
+            } else {
+                displayMessage(csvMessage, data.message || 'Error procesando el embarque.', false);
+                csvStagingArea.style.display = 'block'; // Show staging area again if error
+            }
+
+        } catch (error) {
+            displayMessage(csvMessage, 'Error de conexión al procesar el embarque.', false);
+            csvStagingArea.style.display = 'block'; // Show staging area again if error
+            console.error("Error Final Calc:", error);
+        }
+    });
+
+    function displayFinalCsvResults(data) {
+        lastCsvProcessedData = data;
+        csvResultsDetailsDiv.innerHTML = '';
+        csvResultsSummaryDiv.innerHTML = '';
+        printCsvSummaryButton.style.display = 'none';
+
+        if (data.items_processed_details && data.items_processed_details.length > 0) {
+            printCsvSummaryButton.style.display = 'inline-block';
+        }
+
+        if (data.consolidated_results) {
+            const s = data.consolidated_results;
+            csvResultsSummaryDiv.innerHTML = `
+                <div class="section-title">Resumen Consolidado de Importación (ID: ${data.csv_import_id || 'N/A'})</div>
+                <table>
+                    <tr><td>Ítems Procesados:</td><td class="text-right">${s.total_items_csv}</td></tr>
+                    <tr><td>FOB Total Embarque (USD):</td><td class="text-right">${s.gran_total_fob_embarque.toFixed(2)}</td></tr>
+                    <tr><td>Suma CIF de Líneas (USD):</td><td class="text-right">${s.sum_cif_lineas.toFixed(2)}</td></tr>
+                    <tr><td>Suma AdValorem (USD):</td><td class="text-right">${s.sum_advalorem_lineas.toFixed(2)}</td></tr>
+                    <tr><td>Suma FODINFA (USD):</td><td class="text-right">${s.sum_fodinfa_lineas.toFixed(2)}</td></tr>
+                    <tr><td>Suma ICE (USD):</td><td class="text-right">${s.sum_ice_lineas.toFixed(2)}</td></tr>
+                    <tr><td>Suma Imp. Específicos (USD):</td><td class="text-right">${s.sum_specific_tax_lineas.toFixed(2)}</td></tr>
+                    <tr><td>Suma IVA (USD):</td><td class="text-right">${s.sum_iva_lineas.toFixed(2)}</td></tr>
+                    <tr class="total-row"><td><strong>GRAN TOTAL IMPUESTOS (USD):</strong></td><td class="text-right"><strong>${s.sum_total_impuestos_lineas.toFixed(2)}</strong></td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><td>Suma Agente Aduana Prorrateado (USD):</td><td class="text-right">${(s.sum_agente_aduana_lineas || 0).toFixed(2)}</td></tr>
+                    <tr><td>Suma ISD Pagado Prorrateado (USD):</td><td class="text-right">${(s.sum_isd_pagado_lineas || 0).toFixed(2)}</td></tr>
+                    <tr><td>Suma Otros Gastos Prorrateados (USD):</td><td class="text-right">${(s.sum_otros_gastos_post_nacionalizacion_lineas || 0).toFixed(2)}</td></tr>
+                    <tr class="total-row"><td>GRAN TOTAL COSTO (Post-Import y Gastos) (USD):</td><td class="text-right">${s.sum_costo_total_estimado_lineas.toFixed(2)}</td></tr>
+                    <tr class="total-row"><td><strong>GRAN TOTAL PVP ESTIMADO (USD):</strong></td><td class="text-right"><strong>${s.sum_pvp_total_lineas.toFixed(2)}</strong></td></tr>
+                </table>
+            `;
+        }
+
+        if (data.items_processed_details && data.items_processed_details.length > 0) {
+            let detailsHtml = '<div class="section-title">Detalle por Ítem del CSV</div><table><thead><tr>' +
+                              '<th>Línea</th><th>Desc.</th><th>Partida</th><th>Cant.</th><th>FOB U.</th>' +
+                              '<th>Flete Ítem</th><th>Seguro Ítem</th><th>Ag.Adu.Ítem</th><th>ISD Ítem</th><th>OtrosGast.Ítem</th>' +
+                              '<th>CIF Ítem</th><th>Costo U. Post-Imp.</th><th>PVP U.</th><th>PVP Total Línea</th>' +
+                              '</tr></thead><tbody>';
+            data.items_processed_details.forEach(item => {
+                const calc = item.calculation;
+                if (calc.success) {
+                    const ci = calc.calculoInput;
+                    detailsHtml += `<tr>
+                        <td>${item.line_csv_num}</td>
+                        <td>${item.description}</td>
+                        <td>${ci.partidaArancelariaInfo.code}</td>
+                        <td class="text-right">${ci.cantidad}</td>
+                        <td class="text-right">${ci.valorFOBUnitario.toFixed(2)}</td>
+                        <td class="text-right">${ci.costoFleteInternacionalItem.toFixed(2)}</td>
+                        <td class="text-right">${ci.costoSeguroInternacionalItem.toFixed(2)}</td>
+                        <td class="text-right">${ci.costoAgenteAduanaItem.toFixed(2)}</td>
+                        <td class="text-right">${ci.isdPagadoItem.toFixed(2)}</td>
+                        <td class="text-right">${ci.otrosGastosPostNacionalizacionItem.toFixed(2)}</td>
+                        <td class="text-right">${calc.cif}</td>
+                        <td class="text-right">${calc.cost_price_unit_after_import}</td>
+                        <td class="text-right">${calc.pvp_unit}</td>
+                        <td class="text-right">${calc.pvp_total_line}</td>
+                    </tr>`;
+                } else {
+                    detailsHtml += `<tr><td>${item.line_csv_num}</td><td>${item.description}</td><td colspan="12" style="color:red;">Error: ${calc.message || 'Desconocido'}</td></tr>`;
+                }
+            });
+            detailsHtml += '</tbody></table>';
+            csvResultsDetailsDiv.innerHTML = detailsHtml;
+        }
+
+        if (data.errors_list && data.errors_list.length > 0) {
+            let errorHtml = '<div class="section-title" style="color:red;">Errores Durante el Procesamiento:</div><ul>';
+            data.errors_list.forEach(err => { errorHtml += `<li style="color:red;">${err}</li>`; });
+            errorHtml += '</ul>';
+            csvResultsDetailsDiv.innerHTML = errorHtml + csvResultsDetailsDiv.innerHTML;
+        }
+    }
+
 
     // --- Inicialización ---
     checkLoginStatus();
