@@ -96,15 +96,24 @@ $consolidatedTotals = [
     'sum_otros_gastos_post_nacionalizacion_lineas' => 0
 ];
 
+$tariffCodes = array_unique(array_column($lineasDelCsv, 'partida_codigo'));
+$tariffMap = [];
+
+if (!empty($tariffCodes)) {
+    $placeholders = str_repeat('?,', count($tariffCodes) - 1) . '?';
+    $stmt_batch_tariff = $pdo->prepare("SELECT id, code FROM tariff_codes WHERE code IN ($placeholders)");
+    $stmt_batch_tariff->execute($tariffCodes);
+    while ($row = $stmt_batch_tariff->fetch(PDO::FETCH_ASSOC)) {
+        $tariffMap[$row['code']] = $row['id'];
+    }
+}
+
 foreach ($lineasDelCsv as $itemData) {
-    // Validación crítica: Asegurarse de que la partida exista antes de calcular.
-    $stmt_check_tariff = $pdo->prepare("SELECT id FROM tariff_codes WHERE code = :code");
-    $stmt_check_tariff->execute([':code' => $itemData['partida_codigo']]);
-    $tariffRow = $stmt_check_tariff->fetch(PDO::FETCH_ASSOC);
-    if (!$tariffRow) {
+    if (!isset($tariffMap[$itemData['partida_codigo']])) {
         $calculationErrors[] = "Ítem '{$itemData['descripcion']}': La partida arancelaria '{$itemData['partida_codigo']}' no es válida o no fue seleccionada.";
         continue;
     }
+    $tariffId = $tariffMap[$itemData['partida_codigo']];
 
     $fobTotalLinea = floatval($itemData['fob_unitario_usd']) * intval($itemData['cantidad']);
     $pesoTotalLinea = floatval($itemData['peso_unitario_kg']) * intval($itemData['cantidad']);
@@ -129,7 +138,7 @@ foreach ($lineasDelCsv as $itemData) {
         $agenteAduanaItemProrrateado,
         ($tasaIsdConfigurableEmbarquePorcentaje / 100),
         $otrosGastosPostNacionalizacionItemProrrateado,
-        $tariffRow['id'], $isShipmentActually4x4, $profitLinea
+        $tariffId, $isShipmentActually4x4, $profitLinea
     );
 
     if ($itemCalculationResult['success']) {
@@ -139,7 +148,7 @@ foreach ($lineasDelCsv as $itemData) {
         $params_save_item = [
             ':user_id' => $userId, ':product_name' => $itemData['descripcion'],
             ':product_sku' => $itemData['sku'] ?? null,
-            ':tariff_code_id' => $tariffRow['id'], ':valor_fob_unitario' => $calcInput['valorFOBUnitario'],
+            ':tariff_code_id' => $tariffId, ':valor_fob_unitario' => $calcInput['valorFOBUnitario'],
             ':cantidad' => $calcInput['cantidad'], ':peso_unitario_kg' => $calcInput['pesoUnitarioKg'],
             ':costo_flete' => $calcInput['costoFleteInternacionalItem'],
             ':costo_seguro' => $calcInput['costoSeguroInternacionalItem'],
