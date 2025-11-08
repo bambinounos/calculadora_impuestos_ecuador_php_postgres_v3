@@ -147,7 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAuthUI() {
         const isAdmin = currentUser && currentUser.email === 'admin@example.com'; // Ejemplo de rol admin. Cambiar por un sistema de roles real.
         if (currentUser) {
-            authNav.innerHTML = `<span>Hola, ${currentUser.email}</span> <button id="logout-button">Logout</button>`;
+            let adminLinks = '';
+            if (isAdmin) {
+                adminLinks = `<a href="admin_favicon.php" class="nav-link">Configurar Favicon</a>`;
+            }
+            authNav.innerHTML = `<span>Hola, ${currentUser.email}</span> ${adminLinks} <button id="logout-button">Logout</button>`;
             authSection.style.display = 'none';
             calculatorSection.style.display = 'block';
             saveCalculationButton.style.display = 'inline-block';

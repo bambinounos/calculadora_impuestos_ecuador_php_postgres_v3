@@ -177,4 +177,29 @@ function calculateImportationDetails(
         'pvp_total_line'            => round($pvpTotalLinea, 2)
     ];
 }
+
+function upload_favicon($file) {
+    $target_dir = __DIR__ . "/../public/assets/";
+    // Rename the file to favicon.ico for consistency
+    $target_file = $target_dir . "favicon.ico";
+    $imageFileType = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+
+    // Check if image file is a actual image or fake image
+    $check = getimagesize($file["tmp_name"]);
+    if($check === false) {
+        return ['success' => false, 'message' => 'El archivo no es una imagen.'];
+    }
+
+    // Allow certain file formats
+    if($imageFileType != "ico" && $imageFileType != "png" && $imageFileType != "jpg" && $imageFileType != "jpeg") {
+        return ['success' => false, 'message' => 'Solo se permiten archivos ICO, PNG, JPG y JPEG.'];
+    }
+
+    // Try to move uploaded file
+    if (move_uploaded_file($file["tmp_name"], $target_file)) {
+        return ['success' => true, 'message' => 'El favicon se ha subido correctamente.'];
+    } else {
+        return ['success' => false, 'message' => 'Hubo un error al subir el archivo.'];
+    }
+}
 ?>
